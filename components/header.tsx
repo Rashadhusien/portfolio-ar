@@ -1,19 +1,19 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Link from 'next/link'
-import { Menu, X } from 'lucide-react'
+import { useState } from "react";
+import Link from "next/link";
+import { Menu, X } from "lucide-react";
 
 export function Header() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   const navLinks = [
-    { label: 'الرئيسية', href: '#home' },
-    { label: 'عني', href: '#about' },
-    { label: 'الخدمات', href: '#services' },
-    { label: 'الأسعار', href: '#pricing' },
-    { label: 'التواصل', href: '#contact' },
-  ]
+    { label: "الرئيسية", href: "#home" },
+    { label: "عني", href: "#about" },
+    { label: "الخدمات", href: "#services" },
+    { label: "الأسعار", href: "#pricing" },
+    { label: "التواصل", href: "#contact" },
+  ];
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border/50">
@@ -34,7 +34,7 @@ export function Header() {
             <Link
               key={link.href}
               href={link.href}
-              className="text-muted-foreground hover:text-foreground hover:text-accent transition-colors font-medium text-sm"
+              className="text-muted-foreground  hover:text-accent transition-colors font-medium text-sm"
             >
               {link.label}
             </Link>
@@ -73,5 +73,5 @@ export function Header() {
         </div>
       )}
     </header>
-  )
+  );
 }
