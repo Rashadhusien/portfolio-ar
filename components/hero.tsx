@@ -21,6 +21,7 @@ export function Hero() {
 
   return (
     <section
+      id="home"
       ref={container}
       className="relative min-h-screen flex items-center justify-center py-20 px-4 overflow-hidden"
     >
@@ -32,7 +33,7 @@ export function Hero() {
 
       <div className="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
         {/* Left content */}
-        <div className="space-y-8 order-2 md:order-1">
+        <div className="space-y-6 order-2 md:order-1">
           <div className="space-y-4">
             <h1 className="hero-title text-2xl md:text-4xl lg:text-6xl font-bold text-foreground text-balance leading-10">
               {title}
@@ -58,8 +59,8 @@ export function Hero() {
           </div>
 
           {/* Social links preview */}
-          <div className="pt-6 flex items-center gap-6">
-            <span className="text-sm text-muted-foreground">تابعيني على:</span>
+          <div className="flex items-center gap-6">
+            <span className="text-sm text-muted-foreground">تابعني على:</span>
             <div className="flex gap-4">
               {socialLinks.map(({ icon, platform, url }) => (
                 <a

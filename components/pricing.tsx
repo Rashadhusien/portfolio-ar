@@ -42,7 +42,7 @@ export function Pricing() {
             >
               <div className="p-8">
                 {pkg.highlighted && (
-                  <div className="mb-4 inline-block px-3 py-1 bg-accent text-accent-foreground text-xs font-semibold rounded-full">
+                  <div className="mb-4 absolute top-5 left-5 px-3 py-1 bg-accent text-accent-foreground text-xs font-semibold rounded-full">
                     الأكثر شهرة
                   </div>
                 )}
@@ -62,9 +62,6 @@ export function Pricing() {
                     </span>
                     <span className="text-muted-foreground">جنية</span>
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    أو قابل للتفاوض
-                  </p>
                 </div>
 
                 {/* CTA Button */}

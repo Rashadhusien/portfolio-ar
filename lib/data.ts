@@ -3,6 +3,14 @@ const INSTAGRAM = "https://www.instagram.com/bookswitharwa/";
 const YOUTUBE = "https://www.youtube.com/@bookswitharwa";
 const WHATSAPP = "https://www.whatsapp.com/@bookswitharwa";
 
+export const navLinks = [
+  { label: "الرئيسية", href: "#home" },
+  { label: "عني", href: "#about" },
+  { label: "الخدمات", href: "#services" },
+  { label: "الأسعار", href: "#pricing" },
+  { label: "التواصل", href: "#contact" },
+];
+
 export const siteSettings = {
   title: "BookToker Media Kit",
   description:
@@ -34,8 +42,8 @@ export const hero = {
   title: "مراجِعة كتب وصانعة محتوى",
   subtitle: "المزيج المثالي بين التسويق الإبداعي وعمق المراجعة في عالم الكتب",
   ctaButtons: [
-    { text: "تواصلي معي", href: "#contact", variant: "default" as const },
-    { text: "اعرفي الأسعار", href: "#pricing", variant: "outline" as const },
+    { text: "تواصل معي", href: "#contact", variant: "default" as const },
+    { text: "اعرف الأسعار", href: "#pricing", variant: "outline" as const },
   ],
   profileImage: {
     url: "/hero-image.jpeg",
@@ -95,7 +103,7 @@ export const about = {
     {
       title: "بينتيرست",
       description: {
-        followers: "41K+",
+        followers: "350K+",
       },
     },
   ],
@@ -138,7 +146,7 @@ export const portfolio = {
   items: [
     {
       id: "1",
-      title: `مراجعة رواية "ظل أبي"`,
+      title: `مراجعة رواية "لأنها كيارا"`,
       video: {
         url: "/videos/video1.mp4",
         alt: "Book review",
@@ -147,7 +155,7 @@ export const portfolio = {
     },
     {
       id: "2",
-      title: "تعاون مع دار نشر الأمل",
+      title: `مراجعة رواية "صديقي السيكوباتي"`,
       video: {
         url: "/videos/video2.mp4",
         alt: "Publishing collaboration",
@@ -156,7 +164,7 @@ export const portfolio = {
     },
     {
       id: "3",
-      title: `مراجعة رواية "لأنها كيارا"`,
+      title: `مراجعة رواية "جريمه علي لوح الشطرنج"`,
       video: {
         url: "/videos/video3.mp4",
         alt: "Viral reels",
@@ -175,12 +183,7 @@ export const pricing = {
       name: "باقة التجربة المركزة",
       description: "مراجعة كتاب واحد احترافية",
       price: 500,
-      features: [
-        "مراجعة واحدة للكتاب",
-        "فيديو بجودة عالية",
-        "صور احترافية",
-        "نشر على منصة واحدة",
-      ],
+      features: ["إنستجرام: 1 ريلز", "إنستجرام: 1 ستوري", "تيك توك: 1 فيديو"],
       highlighted: false,
     },
     {
@@ -188,13 +191,7 @@ export const pricing = {
       name: "باقة الانطلاق",
       description: "محتوى دوري ومستمر",
       price: 1000,
-      features: [
-        "4 مراجعات شهرية",
-        "محتوى متنوع (فيديو، صور، Reels)",
-        "نشر على جميع المنصات",
-        "تقرير شهري عن الأداء",
-        "دعم أولويته",
-      ],
+      features: ["إنستجرام: 2 ريلز", "إنستجرام: 3 ستوري", "تيك توك: 2 فيديو"],
       highlighted: true,
     },
     {
@@ -203,12 +200,11 @@ export const pricing = {
       description: "حزمة متكاملة للناشرين",
       price: 1500,
       features: [
-        "تسويق متكامل",
-        "حملات ترويجية مخصصة",
-        "محتوى حصري",
-        "نشر أسبوعي",
-        "استراتيجية تسويقية شاملة",
-        "دعم مستمر",
+        "إنستجرام: 1 بوست",
+        "إنستجرام: 3 ريلز",
+        "إنستجرام: 6 ستوري",
+        "تيك توك: 3 فيديوهات",
+        "بينترست: 10 بينات (Aesthetic Pins)",
       ],
       highlighted: false,
     },

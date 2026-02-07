@@ -74,7 +74,7 @@ export function About() {
           {stats.map((item) => (
             <div
               key={item.title}
-              className="highlight-item p-6 bg-background rounded-lg border border-border hover:border-accent/50 transition-colors"
+              className={`highlight-item p-6 bg-background rounded-lg border border-border hover:border-accent/50 transition-colors ${item.title === "بينتيرست" ? "col-span-2" : ""}`}
             >
               <h3 className="text-lg font-semibold text-foreground mb-2">
                 {item.title}

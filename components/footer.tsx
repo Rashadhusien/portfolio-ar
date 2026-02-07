@@ -1,6 +1,5 @@
-import Link from "next/link";
-import { Mail, MessageCircle, Heart } from "lucide-react";
-import { siteSettings } from "@/lib/data";
+import { Mail, MessageCircle } from "lucide-react";
+import { navLinks, siteSettings } from "@/lib/data";
 import Image from "next/image";
 
 export function Footer() {
@@ -27,13 +26,13 @@ export function Footer() {
               الروابط السريعة
             </h3>
             <ul className="space-y-2">
-              {["الرئيسية", "الخدمات", "الأسعار", "التواصل"].map((link) => (
-                <li key={link}>
+              {navLinks.map((link) => (
+                <li key={link.href}>
                   <a
-                    href="#"
+                    href={link.href}
                     className="text-muted-foreground hover:text-accent transition-colors text-sm"
                   >
-                    {link}
+                    {link.label}
                   </a>
                 </li>
               ))}
@@ -58,7 +57,7 @@ export function Footer() {
                 className="flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors text-sm"
               >
                 <MessageCircle className="w-4 h-4" />
-                واتساب
+                01150153088
               </a>
             </div>
           </div>

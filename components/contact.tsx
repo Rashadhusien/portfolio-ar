@@ -1,12 +1,13 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import { createScrollReveal } from "@/lib/gsap";
 import { Button } from "@/components/ui/button";
 import { Mail, MessageCircle, Zap } from "lucide-react";
 import { siteSettings } from "@/lib/data";
 import Image from "next/image";
+import emailjs from "@emailjs/browser";
 
 export function Contact() {
   const container = useRef<HTMLElement>(null);
@@ -14,9 +15,9 @@ export function Contact() {
   // Hardcoded for now as they are not in siteSettings specifically but passed as props in original.
   // Using sensible defaults or if we had them in data.ts.
   // Actually, let's stick to the visual static content as requested.
-  const email = "info@booktoker.com";
+  const email = "berrydeniz0@gmail.com";
   const whatsapp = "+201150153088";
-  const title = "تواصلي معي";
+  const title = "تواصل معي";
 
   useGSAP(
     () => {
@@ -24,6 +25,37 @@ export function Contact() {
     },
     { scope: container },
   );
+
+  const form = useRef<HTMLFormElement>(null);
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const sendEmail = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.current) return;
+
+    setLoading(true);
+
+    emailjs
+      .sendForm(
+        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
+        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
+        form.current,
+        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!,
+      )
+      .then(
+        (result) => {
+          console.log(result.text);
+          setSuccess(true);
+          setLoading(false);
+          form.current?.reset();
+        },
+        (error) => {
+          console.log(error.text);
+          setLoading(false);
+        },
+      );
+  };
 
   return (
     <section id="contact" ref={container} className="py-20 px-4">
@@ -36,7 +68,6 @@ export function Contact() {
             <div className="w-12 h-1 bg-accent rounded-full"></div>
           </div>
         </div>
-
         {/* Contact options grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
           {/* Email card */}
@@ -53,7 +84,7 @@ export function Contact() {
               أرسلي لي بريد إلكتروني بخصوص التعاون والاستفسارات
             </p>
             <a href={`mailto:${email}`}>
-              <Button variant="outline" className="w-full bg-transparent">
+              <Button variant="outline" className="w-full  bg-gray-50">
                 <Mail className="w-4 h-4 ml-2" />
                 {email}
               </Button>
@@ -69,7 +100,7 @@ export function Contact() {
               <h3 className="text-xl font-semibold text-foreground">واتساب</h3>
             </div>
             <p className="text-muted-foreground mb-6">
-              تواصلي معي مباشرة عبر واتساب للحصول على إجابة سريعة
+              تواصل مباشرة عبر واتساب للحصول على إجابة سريعة
             </p>
             <a
               href={`https://wa.me/${whatsapp.replace(/\D/g, "")}`}
@@ -78,14 +109,66 @@ export function Contact() {
             >
               <Button className="w-full">
                 <MessageCircle className="w-4 h-4 ml-2" />
-                واتساب
+                01150153088
               </Button>
             </a>
           </div>
         </div>
 
+        {/* Quick contact form note */}
+        <div className="mt-12 p-8 bg-secondary/10 rounded-lg border border-secondary/20 text-center">
+          <p className="text-foreground font-semibold mb-2">
+            أو املأي النموذج أدناه
+          </p>
+          <p className="text-muted-foreground mb-6">
+            وسأتواصل معك في أقرب وقت ممكن
+          </p>
+          <form
+            ref={form}
+            onSubmit={sendEmail}
+            className="space-y-4 max-w-md mx-auto"
+          >
+            <input
+              type="text"
+              name="name"
+              placeholder="اسمك"
+              required
+              className="w-full px-4 py-3 rounded-lg bg-background border border-border focus:border-accent focus:outline-none transition-colors"
+            />
+
+            <input
+              type="email"
+              name="email"
+              placeholder="بريدك الإلكتروني"
+              required
+              className="w-full px-4 py-3 rounded-lg bg-background border border-border focus:border-accent focus:outline-none transition-colors"
+            />
+
+            <textarea
+              name="message"
+              placeholder="رسالتك"
+              rows={4}
+              required
+              className="w-full px-4 py-3 rounded-lg bg-background border border-border focus:border-accent focus:outline-none transition-colors resize-none"
+            />
+
+            <button
+              type="submit"
+              className="bg-primary text-white w-full p-2 rounded hover:bg-primary/80 transition"
+              disabled={loading}
+            >
+              {loading ? "جاري الارسال..." : "إرسال الرسالة"}
+            </button>
+
+            {success && (
+              <p className="text-green-500 text-center">
+                رسالتك تم إرسالها بنجاح!
+              </p>
+            )}
+          </form>
+        </div>
         {/* Social media links */}
-        <div className="contact-card p-8 bg-background rounded-lg border border-border">
+        <div className=" mt-12 contact-card p-8 bg-background rounded-lg border border-border">
           <h3 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
             <Zap className="w-5 h-5 text-accent" />
             تابعيني على وسائل التواصل
@@ -113,34 +196,6 @@ export function Contact() {
                 </p>
               </a>
             ))}
-          </div>
-        </div>
-
-        {/* Quick contact form note */}
-        <div className="mt-12 p-8 bg-secondary/10 rounded-lg border border-secondary/20 text-center">
-          <p className="text-foreground font-semibold mb-2">
-            أو املأي النموذج أدناه
-          </p>
-          <p className="text-muted-foreground mb-6">
-            وسأتواصل معك في أقرب وقت ممكن
-          </p>
-          <div className="space-y-4 max-w-md mx-auto">
-            <input
-              type="text"
-              placeholder="اسمك"
-              className="w-full px-4 py-3 rounded-lg bg-background border border-border focus:border-accent focus:outline-none transition-colors"
-            />
-            <input
-              type="email"
-              placeholder="بريدك الإلكتروني"
-              className="w-full px-4 py-3 rounded-lg bg-background border border-border focus:border-accent focus:outline-none transition-colors"
-            />
-            <textarea
-              placeholder="رسالتك"
-              rows={4}
-              className="w-full px-4 py-3 rounded-lg bg-background border border-border focus:border-accent focus:outline-none transition-colors resize-none"
-            />
-            <Button className="w-full">إرسال الرسالة</Button>
           </div>
         </div>
       </div>
