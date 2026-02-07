@@ -1,0 +1,107 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  scroll-behavior: smooth;
+}
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  :root {
+    /* Warm, earthy palette for BookToker aesthetic */
+    --background: 40 50% 97%;
+    --foreground: 25 30% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 25 30% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 25 30% 15%;
+    --primary: 40 25% 40%;
+    --primary-foreground: 40 50% 97%;
+    --secondary: 140 35% 35%;
+    --secondary-foreground: 40 50% 97%;
+    --muted: 40 15% 85%;
+    --muted-foreground: 25 15% 50%;
+    --accent: 35 70% 55%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 40 20% 88%;
+    --input: 40 20% 92%;
+    --ring: 140 35% 35%;
+    --chart-1: 35 70% 55%;
+    --chart-2: 140 35% 45%;
+    --chart-3: 25 30% 30%;
+    --chart-4: 40 25% 60%;
+    --chart-5: 20 60% 60%;
+    --radius: 0.5rem;
+    --sidebar-background: 40 50% 97%;
+    --sidebar-foreground: 25 30% 15%;
+    --sidebar-primary: 140 35% 35%;
+    --sidebar-primary-foreground: 40 50% 97%;
+    --sidebar-accent: 35 70% 55%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 40 20% 88%;
+    --sidebar-ring: 140 35% 35%;
+  }
+  .dark {
+    --background: 25 20% 12%;
+    --foreground: 40 40% 92%;
+    --card: 25 20% 18%;
+    --card-foreground: 40 40% 92%;
+    --popover: 25 20% 18%;
+    --popover-foreground: 40 40% 92%;
+    --primary: 40 25% 60%;
+    --primary-foreground: 25 20% 12%;
+    --secondary: 140 35% 55%;
+    --secondary-foreground: 25 20% 12%;
+    --muted: 25 15% 35%;
+    --muted-foreground: 40 20% 70%;
+    --accent: 35 70% 60%;
+    --accent-foreground: 25 20% 12%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 25 15% 28%;
+    --input: 25 15% 32%;
+    --ring: 35 70% 60%;
+    --chart-1: 35 70% 60%;
+    --chart-2: 140 35% 55%;
+    --chart-3: 25 30% 60%;
+    --chart-4: 40 25% 65%;
+    --chart-5: 20 60% 65%;
+    --sidebar-background: 25 20% 15%;
+    --sidebar-foreground: 40 40% 92%;
+    --sidebar-primary: 35 70% 60%;
+    --sidebar-primary-foreground: 25 20% 12%;
+    --sidebar-accent: 140 35% 55%;
+    --sidebar-accent-foreground: 25 20% 12%;
+    --sidebar-border: 25 15% 28%;
+    --sidebar-ring: 35 70% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    font-family: var(--font-cairo), system-ui, sans-serif;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .font-cairo {
+    font-family: var(--font-cairo), system-ui, sans-serif;
+  }
+
+  .font-mono {
+    font-family: var(--font-jetbrains-mono), monospace;
+  }
+}
