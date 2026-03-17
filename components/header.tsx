@@ -4,8 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { Menu, X } from "lucide-react";
 import { navLinks } from "@/lib/data";
+import { useSession } from "next-auth/react";
 
 export function Header() {
+  const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -23,6 +25,14 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-8">
+          {session && (
+            <Link
+              href="/admin"
+              className="text-muted-foreground  hover:text-accent transition-colors font-medium text-sm"
+            >
+              إدارة الموقع
+            </Link>
+          )}
           {navLinks.map((link) => (
             <Link
               key={link.href}
@@ -52,6 +62,15 @@ export function Header() {
       {isOpen && (
         <div className="md:hidden border-t border-border/50">
           <nav className="flex flex-col gap-1 p-4">
+            {session && (
+              <Link
+                href="/admin"
+                className="px-4 py-2 text-muted-foreground hover:text-foreground hover:bg-primary/10 rounded-lg transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                إدارة الموقع
+              </Link>
+            )}
             {navLinks.map((link) => (
               <Link
                 key={link.href}

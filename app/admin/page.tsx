@@ -17,6 +17,8 @@ async function logout() {
 export default async function AdminPage() {
   const session = await auth();
 
+  console.log(session);
+
   if (!session) {
     redirect("/admin/login");
   }

@@ -1,8 +1,12 @@
 import React from "react";
 import type { Metadata } from "next";
-import { Cairo, JetBrains_Mono } from "next/font/google";
+import { Cairo, JetBrains_Mono, Geist } from "next/font/google";
+import { SessionProvider } from "next-auth/react";
 
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const cairoFont = Cairo({
   subsets: ["latin", "arabic"],
@@ -37,10 +41,10 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
-      className={`${cairoFont.variable} ${jetbrainsMono.variable}`}
+      className={cn(cairoFont.variable, jetbrainsMono.variable, "font-sans", geist.variable)}
     >
       <body className="font-cairo antialiased bg-background text-foreground">
-        {children}
+        <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
   );
