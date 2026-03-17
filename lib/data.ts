@@ -97,7 +97,7 @@ export const about = {
     {
       title: "تيك توك",
       description: {
-        followers: "6K+",
+        followers: "7K+",
       },
     },
     {
@@ -188,7 +188,7 @@ export const pricing = {
       id: "1",
       name: "باقة التجربة المركزة",
       description: "مراجعة كتاب واحد احترافية",
-      price: 500,
+      price: 1000,
       features: ["إنستجرام: 1 ريلز", "إنستجرام: 1 ستوري", "تيك توك: 1 فيديو"],
       highlighted: false,
     },
@@ -196,7 +196,7 @@ export const pricing = {
       id: "2",
       name: "باقة الانطلاق",
       description: "محتوى دوري ومستمر",
-      price: 1000,
+      price: 1500,
       features: ["إنستجرام: 2 ريلز", "إنستجرام: 3 ستوري", "تيك توك: 2 فيديو"],
       highlighted: true,
     },
@@ -204,9 +204,9 @@ export const pricing = {
       id: "3",
       name: "باقة الانتشار الكامل",
       description: "حزمة متكاملة للناشرين",
-      price: 1500,
+      price: 2000,
       features: [
-        "إنستجرام: 1 بوست",
+        "ريفيو علي fabel و Goodreads",
         "إنستجرام: 3 ريلز",
         "إنستجرام: 6 ستوري",
         "تيك توك: 3 فيديوهات",

@@ -48,7 +48,7 @@ export function Hero() {
             {ctaButtons.map((button) => (
               <Link key={button.href} href={button.href}>
                 <Button
-                  className="hero-button w-full sm:w-auto px-8 py-6 text-base font-semibold"
+                  className="w-full sm:w-auto px-8 py-6 text-base font-semibold"
                   variant={button.variant || "default"}
                   size="lg"
                 >
