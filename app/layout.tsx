@@ -1,22 +1,23 @@
 import React from "react";
 import type { Metadata } from "next";
-import { Cairo, JetBrains_Mono, Geist } from "next/font/google";
+import { Cairo, Noto_Sans_Arabic } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 
 import "./globals.css";
 import { cn } from "@/lib/utils";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+// const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
 
 const cairoFont = Cairo({
-  subsets: ["latin", "arabic"],
+  subsets: ["arabic"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-cairo",
 });
 
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
+const fontSans = Noto_Sans_Arabic({
+  subsets: ["arabic"],
+  variable: "--font-sans",
 });
 
 export const metadata: Metadata = {
@@ -41,10 +42,12 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
-      className={cn(cairoFont.variable, jetbrainsMono.variable, "font-sans", geist.variable)}
+      className={cn(cairoFont.variable, fontSans.variable, "font-sans")}
     >
       <body className="font-cairo antialiased bg-background text-foreground">
-        <SessionProvider>{children}</SessionProvider>
+        <SessionProvider>
+          <TooltipProvider>{children}</TooltipProvider>
+        </SessionProvider>
       </body>
     </html>
   );

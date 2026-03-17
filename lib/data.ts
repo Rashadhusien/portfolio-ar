@@ -10,6 +10,12 @@ export const navLinks = [
   { label: "الأسعار", href: "#pricing" },
   { label: "التواصل", href: "#contact" },
 ];
+export const adminLinks = [
+  { label: "الرئيسية", href: "/admin" },
+  { label: "إدارة الخدمات", href: "/admin/services" },
+  { label: "إدارة الأسعار", href: "/admin/pricing" },
+  { label: "إدارة التواصل", href: "/admin/contact" },
+];
 
 export const siteSettings = {
   title: "BookToker Media Kit",
