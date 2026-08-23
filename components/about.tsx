@@ -3,11 +3,16 @@
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { createScrollReveal } from "@/lib/gsap";
-import { about } from "@/lib/data";
+import { about as fallbackAbout } from "@/lib/data";
 
-export function About() {
+export function About({ data }: { data?: { title: string; content: string; features: string[]; stats: { title: string; description: { followers: string } }[] } }) {
   const container = useRef<HTMLElement>(null);
-  const { title, content, highlights, features, stats } = about;
+  const fallback = fallbackAbout;
+  const title = data?.title ?? fallback.title;
+  const content = data?.content ?? fallback.content;
+  const features = data?.features ?? fallback.features;
+  const stats = data?.stats ?? fallback.stats;
+  const highlights = fallback.highlights;
 
   useGSAP(
     () => {

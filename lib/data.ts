@@ -18,7 +18,7 @@ export const adminLinks = [
 ];
 
 export const siteSettings = {
-  title: "BookToker Media Kit",
+  title: "Books With Arwa",
   description:
     "منصة متخصصة في مراجعات الكتب والتسويق على وسائل التواصل الاجتماعي",
   profileImage: {

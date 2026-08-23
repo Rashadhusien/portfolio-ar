@@ -1,9 +1,13 @@
 import { Mail, MessageCircle } from "lucide-react";
-import { navLinks, siteSettings } from "@/lib/data";
+import { navLinks, siteSettings as fallbackSettings } from "@/lib/data";
 import Image from "next/image";
 
-export function Footer() {
-  const { socialLinks, description } = siteSettings;
+export function Footer({ brandName, description, contact, socialLinks: propLinks }: { brandName?: string; description?: string; contact?: { email: string; whatsappNumber: string }; socialLinks?: { platform: string; url: string; iconUrl: string }[] }) {
+  const fallback = fallbackSettings;
+  const socialLinks = (propLinks ? propLinks.map(s=>({ platform: s.platform, url: s.url, icon: s.iconUrl })) : fallback.socialLinks) as typeof fallback.socialLinks;
+  const desc = description ?? fallback.description;
+  const email = contact?.email ?? "berrydeniz0@gmail.com";
+  const whatsapp = contact?.whatsappNumber ?? "+201150153088";
 
   return (
     <footer className="bg-card border-t border-border/50">
@@ -16,7 +20,7 @@ export function Footer() {
               شكراً جزيلاً
             </h3>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              {description}
+              {desc}
             </p>
           </div>
 
@@ -46,18 +50,18 @@ export function Footer() {
             </h3>
             <div className="space-y-3">
               <a
-                href="mailto:info@booktoker.com"
+                href={`mailto:${email}`}
                 className="flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors text-sm"
               >
                 <Mail className="w-4 h-4" />
-                info@booktoker.com
+                {email}
               </a>
               <a
-                href="https://wa.me/201150153088"
+                href={`https://wa.me/${whatsapp.replace(/\D/g, "")}`}
                 className="flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors text-sm"
               >
                 <MessageCircle className="w-4 h-4" />
-                01150153088
+                {whatsapp.replace("+20","0")}
               </a>
             </div>
           </div>

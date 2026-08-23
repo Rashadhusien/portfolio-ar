@@ -6,11 +6,11 @@ import { useGSAP } from "@gsap/react";
 import { createScrollReveal } from "@/lib/gsap";
 import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
-import { pricing as pricingData } from "@/lib/data";
+import { pricing as fallbackPricing } from "@/lib/data";
 
-export function Pricing() {
+export function Pricing({ data }: { data?: { title: string; packages: { id: string; name: string; description: string; price: number; features: string[]; highlighted: boolean }[]; note?: string } }) {
   const container = useRef<HTMLElement>(null);
-  const { title, packages, note } = pricingData;
+  const { title, packages, note } = data ?? fallbackPricing;
 
   useGSAP(
     () => {

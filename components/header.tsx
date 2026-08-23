@@ -6,20 +6,18 @@ import { Menu, X } from "lucide-react";
 import { navLinks } from "@/lib/data";
 import { useSession } from "next-auth/react";
 
-export function Header() {
+export function Header({ brandName }: { brandName?: string }) {
   const { data: session } = useSession();
   const [isOpen, setIsOpen] = useState(false);
+  const displayBrand = brandName || "Books With Arwa";
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md border-b border-border/50">
       <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 group">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-secondary flex items-center justify-center">
-            <span className="text-white font-bold text-lg">📚</span>
-          </div>
-          <span className="font-bold text-foreground hidden sm:inline group-hover:text-accent transition-colors">
-            بوكتوكر
+          <span className="font-bold text-foreground group-hover:text-accent transition-colors">
+            {displayBrand}
           </span>
         </Link>
 

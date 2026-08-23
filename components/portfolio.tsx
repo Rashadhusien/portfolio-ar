@@ -5,11 +5,11 @@ import Image from "next/image";
 import { useGSAP } from "@gsap/react";
 import { createScrollReveal } from "@/lib/gsap";
 import { ExternalLink } from "lucide-react";
-import { portfolio as portfolioData, TIKTOK } from "@/lib/data";
+import { portfolio as fallbackPortfolio, TIKTOK } from "@/lib/data";
 
-export function Portfolio() {
+export function Portfolio({ data }: { data?: { title: string; items: { id: string; title: string; video: { url: string; alt: string }; link: string }[] } }) {
   const container = useRef<HTMLElement>(null);
-  const { title, items } = portfolioData;
+  const { title, items } = data ?? fallbackPortfolio;
 
   useGSAP(
     () => {

@@ -13,7 +13,21 @@ const nextConfig = {
         protocol: 'https',
         hostname: '**.cdn.sanity.io',
       },
+      {
+        protocol: 'https',
+        hostname: '**.cloudinary.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+      },
     ],
+  },
+  // Increase body size limit for server actions to handle video uploads
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '10mb',
+    },
   },
   headers: async () => {
     return [

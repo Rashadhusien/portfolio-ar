@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { createScrollReveal } from "@/lib/gsap";
 import { BookOpen, Sparkles, Camera, TrendingUp } from "lucide-react";
-import { services as servicesData } from "@/lib/data";
+import { services as fallbackServices } from "@/lib/data";
 
 const iconMap = {
   book: BookOpen,
@@ -13,9 +13,9 @@ const iconMap = {
   trending: TrendingUp,
 };
 
-export function Services() {
+export function Services({ data }: { data?: { title: string; items: { id: string; name: string; description: string; icon: keyof typeof iconMap }[] } }) {
   const container = useRef<HTMLElement>(null);
-  const { title, items } = servicesData;
+  const { title, items } = data ?? fallbackServices;
 
   useGSAP(
     () => {

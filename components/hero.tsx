@@ -6,11 +6,11 @@ import Image from "next/image";
 import { useGSAP } from "@gsap/react";
 import { createHeroAnimation } from "@/lib/gsap";
 import { Button } from "@/components/ui/button";
-import { hero } from "@/lib/data";
+import { hero as fallbackHero } from "@/lib/data";
 
-export function Hero() {
+export function Hero({ data }: { data?: { title: string; subtitle: string; ctaButtons: { text: string; href: string; variant: any }[]; profileImage: { url: string; alt: string }; socialLinks?: { icon: string; platform: string; url: string }[] } }) {
   const container = useRef<HTMLDivElement>(null);
-  const { title, subtitle, ctaButtons, profileImage, socialLinks } = hero;
+  const { title, subtitle, ctaButtons, profileImage, socialLinks } = data ?? fallbackHero;
 
   useGSAP(
     () => {
@@ -62,7 +62,7 @@ export function Hero() {
           <div className="flex items-center gap-6">
             <span className="text-sm text-muted-foreground">تابعني على:</span>
             <div className="flex gap-4">
-              {socialLinks.map(({ icon, platform, url }) => (
+              {(socialLinks ?? []).map(({ icon, platform, url }) => (
                 <a
                   key={icon}
                   href={url}

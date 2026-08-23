@@ -5,18 +5,15 @@ import { useGSAP } from "@gsap/react";
 import { createScrollReveal } from "@/lib/gsap";
 import { Button } from "@/components/ui/button";
 import { Mail, MessageCircle, Zap } from "lucide-react";
-import { siteSettings } from "@/lib/data";
+import { siteSettings as fallbackSettings } from "@/lib/data";
 import Image from "next/image";
 import emailjs from "@emailjs/browser";
 
-export function Contact() {
+export function Contact({ data }: { data?: { email?: string; whatsapp?: string; socialLinks?: { platform: string; url: string; icon: string }[] } }) {
   const container = useRef<HTMLElement>(null);
-  const { socialLinks } = siteSettings;
-  // Hardcoded for now as they are not in siteSettings specifically but passed as props in original.
-  // Using sensible defaults or if we had them in data.ts.
-  // Actually, let's stick to the visual static content as requested.
-  const email = "berrydeniz0@gmail.com";
-  const whatsapp = "+201150153088";
+  const socialLinks = data?.socialLinks ?? fallbackSettings.socialLinks;
+  const email = data?.email ?? "berrydeniz0@gmail.com";
+  const whatsapp = data?.whatsapp ?? "+201150153088";
   const title = "تواصل معي";
 
   useGSAP(

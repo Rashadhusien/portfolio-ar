@@ -2,6 +2,7 @@ import React from "react";
 import type { Metadata } from "next";
 import { Cairo, Noto_Sans_Arabic } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
+import { Toaster } from "sonner";
 
 import "./globals.css";
 import { cn } from "@/lib/utils";
@@ -21,15 +22,15 @@ const fontSans = Noto_Sans_Arabic({
 });
 
 export const metadata: Metadata = {
-  title: "بوكتوكر | مراجعات كتب وصناعة محتوى ثقافي",
+  title: "Books With Arwa | مراجعات كتب وصناعة محتوى ثقافي",
   description:
     "منصة متخصصة في مراجعات الكتب والتسويق الثقافي على وسائل التواصل الاجتماعي",
   generator: "v0.app",
   openGraph: {
-    title: "بوكتوكر | مراجعات كتب وصناعة محتوى ثقافي",
+    title: "Books With Arwa | مراجعات كتب وصناعة محتوى ثقافي",
     description:
       "منصة متخصصة في مراجعات الكتب والتسويق الثقافي على وسائل التواصل الاجتماعي",
-    locale: "ar_SA",
+    locale: "ar_EG",
   },
 };
 
@@ -44,9 +45,14 @@ export default function RootLayout({
       dir="rtl"
       className={cn(cairoFont.variable, fontSans.variable, "font-sans")}
     >
+      <head>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/favicon.ico" />
+      </head>
       <body className="font-cairo antialiased bg-background text-foreground">
         <SessionProvider>
           <TooltipProvider>{children}</TooltipProvider>
+          <Toaster position="top-center" richColors dir="rtl" />
         </SessionProvider>
       </body>
     </html>

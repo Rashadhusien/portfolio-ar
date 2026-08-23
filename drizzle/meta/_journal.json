@@ -8,6 +8,13 @@
       "when": 1773704587908,
       "tag": "0000_skinny_speedball",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1787407000276,
+      "tag": "0001_daffy_ravenous",
+      "breakpoints": true
     }
   ]
 }
