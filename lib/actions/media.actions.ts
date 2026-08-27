@@ -8,6 +8,7 @@ cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET,
+  secure: true,
 });
 
 // File size limits (in bytes)
@@ -42,10 +43,22 @@ export async function uploadImage(file: File) {
           resource_type: "image",
           folder: "portfolio",
           max_file_size: MAX_IMAGE_SIZE,
+          allowed_formats: ["jpg", "jpeg", "png", "webp", "gif"],
         },
         (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
+          if (error) {
+            console.error("Cloudinary upload error:", error);
+            console.error("Error details:", {
+              message: error.message,
+              http_code: error.http_code,
+              name: error.name,
+            });
+            reject(
+              new Error(`فشل رفع الصورة: ${error.message || "خطأ في السيرفر"}`),
+            );
+          } else {
+            resolve(result);
+          }
         },
       )
       .end(buffer);
@@ -73,22 +86,80 @@ export async function uploadVideo(file: File) {
   const arrayBuffer = await file.arrayBuffer();
   const buffer = Buffer.from(arrayBuffer);
 
-  return new Promise((resolve, reject) => {
-    cloudinary.uploader
-      .upload_stream(
-        {
-          resource_type: "video",
-          folder: "portfolio/videos",
-          max_file_size: MAX_VIDEO_SIZE,
-          transformation: [{ quality: "auto", fetch_format: "auto" }],
-        },
-        (error, result) => {
-          if (error) reject(error);
-          else resolve(result);
-        },
-      )
-      .end(buffer);
-  });
+  // Try upload with resource_type: "auto" first
+  try {
+    return await new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            resource_type: "auto",
+            folder: "portfolio/videos",
+            max_file_size: MAX_VIDEO_SIZE,
+            allowed_formats: ["mp4", "webm", "mov", "avi"],
+            chunk_size: 6000000,
+          },
+          (error, result) => {
+            if (error) {
+              console.error("Cloudinary upload error (auto):", error);
+              console.error("Error details:", {
+                message: error.message,
+                http_code: error.http_code,
+                name: error.name,
+              });
+
+              // Extract detailed error information
+              const errorMessage = error.message || "خطأ في السيرفر";
+              const httpCode = error.http_code || "Unknown";
+
+              reject(
+                new Error(`فشل رفع الفيديو (${httpCode}): ${errorMessage}`),
+              );
+            } else {
+              resolve(result);
+            }
+          },
+        )
+        .end(buffer);
+    });
+  } catch (autoError) {
+    console.log(
+      "Auto resource_type failed, trying explicit video resource_type",
+    );
+
+    // Fallback to explicit video resource_type
+    return new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            resource_type: "video",
+            folder: "portfolio/videos",
+            max_file_size: MAX_VIDEO_SIZE,
+            allowed_formats: ["mp4", "webm", "mov", "avi"],
+            chunk_size: 6000000,
+          },
+          (error, result) => {
+            if (error) {
+              console.error("Cloudinary upload error (video):", error);
+              console.error("Error details:", {
+                message: error.message,
+                http_code: error.http_code,
+                name: error.name,
+              });
+
+              const errorMessage = error.message || "خطأ في السيرفر";
+              const httpCode = error.http_code || "Unknown";
+
+              reject(
+                new Error(`فشل رفع الفيديو (${httpCode}): ${errorMessage}`),
+              );
+            } else {
+              resolve(result);
+            }
+          },
+        )
+        .end(buffer);
+    });
+  }
 }
 
 export async function deleteMedia(publicId: string) {
@@ -99,8 +170,17 @@ export async function deleteMedia(publicId: string) {
 
   return new Promise((resolve, reject) => {
     cloudinary.uploader.destroy(publicId, (error, result) => {
-      if (error) reject(error);
-      else resolve(result);
+      if (error) {
+        console.error("Cloudinary delete error:", error);
+        console.error("Error details:", {
+          message: error.message,
+          http_code: error.http_code,
+          name: error.name,
+        });
+        reject(error);
+      } else {
+        resolve(result);
+      }
     });
   });
 }

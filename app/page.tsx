@@ -21,16 +21,17 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 export default async function Page() {
-  const [siteSettings, hero, about, services, works, pricing, contact, social] = await Promise.all([
-    getSiteSettings(),
-    getHeroContent(),
-    getAboutContent(),
-    getServices(),
-    getPreviousWorks(),
-    getPricingPackages(),
-    getContactInfo(),
-    getSocialLinks(),
-  ]);
+  const [siteSettings, hero, about, services, works, pricing, contact, social] =
+    await Promise.all([
+      getSiteSettings(),
+      getHeroContent(),
+      getAboutContent(),
+      getServices(),
+      getPreviousWorks(),
+      getPricingPackages(),
+      getContactInfo(),
+      getSocialLinks(),
+    ]);
 
   // Map DB -> UI shapes with fallback to hardcoded if DB empty (allows build even without DB connection)
   const heroProps = hero
@@ -38,11 +39,24 @@ export default async function Page() {
         title: hero.title,
         subtitle: hero.subtitle,
         ctaButtons: [
-          { text: hero.ctaButtonText1, href: hero.ctaButtonLink1, variant: hero.ctaButtonVariant1 as any },
-          { text: hero.ctaButtonText2, href: hero.ctaButtonLink2, variant: hero.ctaButtonVariant2 as any },
+          {
+            text: hero.ctaButtonText1,
+            href: hero.ctaButtonLink1,
+            variant: hero.ctaButtonVariant1 as any,
+          },
+          {
+            text: hero.ctaButtonText2,
+            href: hero.ctaButtonLink2,
+            variant: hero.ctaButtonVariant2 as any,
+          },
         ],
         profileImage: { url: hero.profileImageUrl, alt: hero.profileImageAlt },
-        socialLinks: social?.map((s: any) => ({ platform: s.platform, url: s.url, icon: s.iconUrl })) ?? undefined,
+        socialLinks:
+          social?.map((s: any) => ({
+            platform: s.platform,
+            url: s.url,
+            icon: s.iconUrl,
+          })) ?? undefined,
       }
     : undefined;
 
@@ -51,16 +65,36 @@ export default async function Page() {
         title: about.content.title,
         content: about.content.content,
         features: about.features?.map((f: any) => f.feature) ?? [],
-        stats: about.stats?.map((s: any) => ({ title: s.title, description: { followers: s.followers } })) ?? [],
+        stats:
+          about.stats?.map((s: any) => ({
+            title: s.title,
+            description: { followers: s.followers },
+          })) ?? [],
       }
     : undefined;
 
   const servicesProps = services?.length
-    ? { title: "الخدمات", items: services.map((s: any) => ({ id: s.id, name: s.name, description: s.description, icon: s.icon })) }
+    ? {
+        title: "الخدمات",
+        items: services.map((s: any) => ({
+          id: s.id,
+          name: s.name,
+          description: s.description,
+          icon: s.icon,
+        })),
+      }
     : undefined;
 
   const portfolioProps = works?.length
-    ? { title: "أعمالي السابقة", items: works.map((w: any) => ({ id: w.id, title: w.title, video: { url: w.videoUrl, alt: w.videoAlt }, link: w.externalSourceUrl })) }
+    ? {
+        title: "أعمالي السابقة",
+        items: works.map((w: any) => ({
+          id: w.id,
+          title: w.title,
+          video: { url: w.videoUrl, alt: w.videoAlt },
+          link: w.externalSourceUrl,
+        })),
+      }
     : undefined;
 
   const pricingProps = pricing?.length
@@ -78,13 +112,19 @@ export default async function Page() {
       }
     : undefined;
 
-  const contactProps = contact || social
-    ? {
-        email: contact?.email,
-        whatsapp: contact?.whatsappNumber,
-        socialLinks: social?.map((s: any) => ({ platform: s.platform, url: s.url, icon: s.iconUrl })) ?? undefined,
-      }
-    : undefined;
+  const contactProps =
+    contact || social
+      ? {
+          email: contact?.email,
+          whatsapp: contact?.whatsappNumber,
+          socialLinks:
+            social?.map((s: any) => ({
+              platform: s.platform,
+              url: s.url,
+              icon: s.iconUrl,
+            })) ?? undefined,
+        }
+      : undefined;
 
   return (
     <main className="min-h-screen">
@@ -95,7 +135,12 @@ export default async function Page() {
       <Portfolio data={portfolioProps} />
       <Pricing data={pricingProps} />
       <Contact data={contactProps} />
-      <Footer brandName={siteSettings?.brandName} description={siteSettings?.metaDescription} contact={contact ?? undefined} socialLinks={social ?? undefined} />
+      <Footer
+        brandName={siteSettings?.brandName}
+        description={siteSettings?.metaDescription}
+        contact={contact ?? undefined}
+        socialLinks={social ?? undefined}
+      />
     </main>
   );
 }

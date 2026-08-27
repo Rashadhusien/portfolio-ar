@@ -94,9 +94,7 @@ export default async function AdminPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold mb-2">
-          مرحباً، {session.user?.name} 👋
-        </h1>
+        <h1 className="text-3xl font-bold mb-2">أهلا، لولو 👋</h1>
         <p className="text-muted-foreground">إليك نظرة عامة على موقعك</p>
       </div>
 
