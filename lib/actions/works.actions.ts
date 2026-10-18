@@ -21,7 +21,7 @@ export async function getWorks() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
   try {
-    return await db.query.previousWorks.findMany({ orderBy: [asc(previousWorks.displayOrder)] });
+    return await db.query.previousWorks.findMany({ orderBy: [asc(previousWorks.displayOrder), asc(previousWorks.createdAt)] });
   } catch (e) {
     console.error("getWorks DB error:", e);
     return [];
