@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -124,12 +125,12 @@ function AdminLoginContent() {
           </form>
 
           <div className="mt-6 text-center">
-            <a
+            <Link
               href="/"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               ← العودة إلى الموقع الرئيسي
-            </a>
+            </Link>
           </div>
         </CardContent>
       </Card>
