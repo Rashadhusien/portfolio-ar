@@ -6,14 +6,15 @@ import { siteSettings, contactInfo } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { safeImageSrc } from "@/lib/validation/url";
 
 const siteSettingsSchema = z.object({
   brandName: z.string().min(1, "Brand name is required"),
   metaTitle: z.string().min(1, "Meta title is required"),
   metaDescription: z.string().min(1, "Meta description is required"),
   ogLocale: z.string().min(1, "Locale is required"),
-  faviconUrl: z.string().url("Invalid URL").optional(),
-  logoUrl: z.string().url("Invalid URL").optional(),
+  faviconUrl: safeImageSrc("Invalid URL").optional(),
+  logoUrl: safeImageSrc("Invalid URL").optional(),
 });
 
 const contactInfoSchema = z.object({

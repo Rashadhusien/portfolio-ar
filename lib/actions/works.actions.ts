@@ -6,12 +6,13 @@ import { previousWorks } from "@/lib/schema";
 import { eq, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { safeLink, safeMediaSrc } from "@/lib/validation/url";
 
 const workSchema = z.object({
   title: z.string().min(1, "العنوان مطلوب"),
-  videoUrl: z.string().min(1, "رابط الفيديو مطلوب"),
+  videoUrl: safeMediaSrc("رابط الفيديو مطلوب"),
   videoAlt: z.string().min(1, "وصف الفيديو مطلوب"),
-  externalSourceUrl: z.string().min(1, "الرابط الخارجي مطلوب"),
+  externalSourceUrl: safeLink("الرابط الخارجي مطلوب"),
   platform: z.string().min(1, "المنصة مطلوبة"),
   displayOrder: z.coerce.number().int().min(0).default(0),
   isVisible: z.coerce.boolean().default(true),
