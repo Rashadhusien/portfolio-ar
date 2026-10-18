@@ -62,7 +62,7 @@ export async function getAboutFeatures() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
   try {
-    return await db.query.aboutFeatures.findMany({ orderBy: [asc(aboutFeatures.displayOrder)] });
+    return await db.query.aboutFeatures.findMany({ orderBy: [asc(aboutFeatures.displayOrder), asc(aboutFeatures.createdAt)] });
   } catch (e) {
     console.error("getAboutFeatures DB error:", e);
     return [];
@@ -111,7 +111,7 @@ export async function getAboutStats() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
   try {
-    return await db.query.aboutStats.findMany({ orderBy: [asc(aboutStats.displayOrder)] });
+    return await db.query.aboutStats.findMany({ orderBy: [asc(aboutStats.displayOrder), asc(aboutStats.createdAt)] });
   } catch (e) {
     console.error("getAboutStats DB error:", e);
     return [];

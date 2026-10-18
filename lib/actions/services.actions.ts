@@ -19,7 +19,7 @@ export async function getServices() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
   try {
-    return await db.query.services.findMany({ orderBy: [asc(services.displayOrder)] });
+    return await db.query.services.findMany({ orderBy: [asc(services.displayOrder), asc(services.createdAt)] });
   } catch (e) {
     console.error("getServices DB error:", e);
     return [];

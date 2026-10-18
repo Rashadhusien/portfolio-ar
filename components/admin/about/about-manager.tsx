@@ -91,12 +91,11 @@ function StatsManager({ stats }: { stats: any[] }) {
   const [items, setItems] = useState(stats);
   const [editing, setEditing] = useState<any | null>(null);
   const [open, setOpen] = useState(false);
+  const [isVisible, setIsVisible] = useState(true);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    // handle checkbox isVisible
-    const isVisible = (e.currentTarget.querySelector('#isVisible') as HTMLInputElement)?.checked;
     fd.set("isVisible", String(isVisible));
     const res = editing ? await updateAboutStat(editing.id, fd) : await createAboutStat(fd);
     if (res.error) toast.error(res.error); else { toast.success(res.success); window.location.reload(); }
@@ -105,14 +104,14 @@ function StatsManager({ stats }: { stats: any[] }) {
   return (
     <Card>
       <CardHeader><div className="flex justify-between items-center"><CardTitle>الإحصائيات</CardTitle>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button size="sm" onClick={()=>setEditing(null)}><Plus className="h-4 w-4 ml-1"/>إضافة</Button></DialogTrigger>
+        <Dialog open={open} onOpenChange={(v)=>{setOpen(v); if(!v){setEditing(null); setIsVisible(true);}}}>
+          <DialogTrigger asChild><Button size="sm" onClick={()=>{setEditing(null); setIsVisible(true);}}><Plus className="h-4 w-4 ml-1"/>إضافة</Button></DialogTrigger>
           <DialogContent><DialogHeader><DialogTitle>{editing ? "تعديل إحصائية" : "إضافة إحصائية"}</DialogTitle></DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2"><Label>المنصة</Label><Input name="title" defaultValue={editing?.title} required /></div>
               <div className="space-y-2"><Label>المتابعين</Label><Input name="followers" defaultValue={editing?.followers} required placeholder="مثال: 7K+" /></div>
               <div className="space-y-2"><Label>الترتيب</Label><Input name="displayOrder" type="number" defaultValue={editing?.displayOrder ?? 0} /></div>
-              <div className="flex items-center gap-2"><Switch id="isVisible" defaultChecked={editing?.isVisible ?? true} /><Label htmlFor="isVisible">ظاهر</Label></div>
+              <div className="flex items-center gap-2"><Switch id="isVisible" checked={isVisible} onCheckedChange={setIsVisible} /><Label htmlFor="isVisible">ظاهر</Label></div>
               <Button type="submit">{editing ? "تحديث" : "إضافة"}</Button>
             </form>
           </DialogContent>
@@ -123,7 +122,7 @@ function StatsManager({ stats }: { stats: any[] }) {
           <div key={s.id} className="flex justify-between items-center p-3 border rounded-lg">
             <span>{s.title} - <b className="text-accent">{s.followers}</b> {s.isVisible ? "👁️" : "🚫"}</span>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={()=>{setEditing(s); setOpen(true);}}><Edit className="h-4 w-4"/></Button>
+              <Button variant="outline" size="sm" onClick={()=>{setEditing(s); setIsVisible(s.isVisible); setOpen(true);}}><Edit className="h-4 w-4"/></Button>
               <ConfirmDialog trigger={<Button variant="destructive" size="sm"><Trash2 className="h-4 w-4"/></Button>} title="حذف الإحصائية" description="هل أنت متأكد؟" onConfirm={async()=>{const r=await deleteAboutStat(s.id); if(r.error) toast.error(r.error); else {toast.success(r.success); setItems(items.filter((x:any)=>x.id!==s.id));}}} />
             </div>
           </div>

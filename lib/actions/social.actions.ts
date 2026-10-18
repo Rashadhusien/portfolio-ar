@@ -19,7 +19,7 @@ export async function getSocialLinks() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
   try {
-    return await db.query.socialLinks.findMany({ orderBy: [asc(socialLinks.displayOrder)] });
+    return await db.query.socialLinks.findMany({ orderBy: [asc(socialLinks.displayOrder), asc(socialLinks.createdAt)] });
   } catch (e) {
     console.error("getSocialLinks DB error:", e);
     return [];

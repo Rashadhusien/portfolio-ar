@@ -4,7 +4,7 @@ import {
   services, previousWorks, pricingPackages, pricingFeatures, 
   contactInfo, socialLinks 
 } from "@/lib/schema";
-import { eq, desc } from "drizzle-orm";
+import { eq, asc } from "drizzle-orm";
 
 const fallbackSiteSettings = {
   brandName: "Books With Arwa",
@@ -34,11 +34,11 @@ export async function getAboutContent() {
   try {
     const content = await db.query.aboutContent.findFirst();
     const features = await db.query.aboutFeatures.findMany({
-      orderBy: [desc(aboutFeatures.displayOrder)],
+      orderBy: [asc(aboutFeatures.displayOrder), asc(aboutFeatures.createdAt)],
     });
     const stats = await db.query.aboutStats.findMany({
       where: eq(aboutStats.isVisible, true),
-      orderBy: [desc(aboutStats.displayOrder)],
+      orderBy: [asc(aboutStats.displayOrder), asc(aboutStats.createdAt)],
     });
     return { content, features, stats };
   } catch {
@@ -50,7 +50,7 @@ export async function getServices() {
   try {
     return await db.query.services.findMany({
       where: eq(services.isVisible, true),
-      orderBy: [desc(services.displayOrder)],
+      orderBy: [asc(services.displayOrder), asc(services.createdAt)],
     });
   } catch {
     return [];
@@ -61,7 +61,7 @@ export async function getPreviousWorks() {
   try {
     return await db.query.previousWorks.findMany({
       where: eq(previousWorks.isVisible, true),
-      orderBy: [desc(previousWorks.displayOrder)],
+      orderBy: [asc(previousWorks.displayOrder), asc(previousWorks.createdAt)],
     });
   } catch {
     return [];
@@ -72,10 +72,10 @@ export async function getPricingPackages() {
   try {
     const packages = await db.query.pricingPackages.findMany({
       where: eq(pricingPackages.isVisible, true),
-      orderBy: [desc(pricingPackages.displayOrder)],
+      orderBy: [asc(pricingPackages.displayOrder), asc(pricingPackages.createdAt)],
       with: {
         features: {
-          orderBy: [desc(pricingFeatures.displayOrder)],
+          orderBy: [asc(pricingFeatures.displayOrder), asc(pricingFeatures.createdAt)],
         },
       },
     });
@@ -97,7 +97,7 @@ export async function getSocialLinks() {
   try {
     return await db.query.socialLinks.findMany({
       where: eq(socialLinks.isVisible, true),
-      orderBy: [desc(socialLinks.displayOrder)],
+      orderBy: [asc(socialLinks.displayOrder), asc(socialLinks.createdAt)],
     });
   } catch {
     return [];
