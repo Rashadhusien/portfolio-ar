@@ -23,12 +23,14 @@ function AdminLoginContent() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const blocked = searchParams.get("blocked") === "true";
+  const [rateLimited, setRateLimited] = useState(false);
+  const blocked = rateLimited || searchParams.get("blocked") === "true";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setRateLimited(false);
 
     try {
       const result = await signIn("credentials", {
@@ -37,7 +39,9 @@ function AdminLoginContent() {
         redirect: false,
       });
 
-      if (result?.error) {
+      if (result?.code === "rate_limited") {
+        setRateLimited(true);
+      } else if (result?.error) {
         setError("البريد الإلكتروني أو كلمة المرور غير صحيحة");
       } else {
         router.push("/admin");
