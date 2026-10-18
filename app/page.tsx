@@ -16,6 +16,7 @@ import {
   getContactInfo,
   getSocialLinks,
 } from "@/lib/data-server";
+import { isSafeImageSrc, isSafeLink, isSafeMediaSrc } from "@/lib/validation/url";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -33,6 +34,16 @@ export default async function Page() {
       getSocialLinks(),
     ]);
 
+  // Defence in depth: drop rows saved before URL validation existed that
+  // next/image can't render (would crash the page) or that carry unsafe links.
+  const safeSocial = social.filter(
+    (s) => isSafeLink(s.url) && isSafeImageSrc(s.iconUrl),
+  );
+  const safeWorks = works.filter(
+    (w) => isSafeMediaSrc(w.videoUrl) && isSafeLink(w.externalSourceUrl),
+  );
+  const safeHref = (href: string) => (isSafeLink(href) ? href : "#");
+
   // Map DB -> UI shapes with fallback to hardcoded if DB empty (allows build even without DB connection)
   const heroProps = hero
     ? {
@@ -41,18 +52,21 @@ export default async function Page() {
         ctaButtons: [
           {
             text: hero.ctaButtonText1,
-            href: hero.ctaButtonLink1,
+            href: safeHref(hero.ctaButtonLink1),
             variant: hero.ctaButtonVariant1 as any,
           },
           {
             text: hero.ctaButtonText2,
-            href: hero.ctaButtonLink2,
+            href: safeHref(hero.ctaButtonLink2),
             variant: hero.ctaButtonVariant2 as any,
           },
         ],
-        profileImage: { url: hero.profileImageUrl, alt: hero.profileImageAlt },
+        profileImage: {
+          url: isSafeImageSrc(hero.profileImageUrl) ? hero.profileImageUrl : "",
+          alt: hero.profileImageAlt,
+        },
         socialLinks:
-          social?.map((s: any) => ({
+          safeSocial.map((s: any) => ({
             platform: s.platform,
             url: s.url,
             icon: s.iconUrl,
@@ -85,10 +99,10 @@ export default async function Page() {
       }
     : undefined;
 
-  const portfolioProps = works?.length
+  const portfolioProps = safeWorks.length
     ? {
         title: "أعمالي السابقة",
-        items: works.map((w: any) => ({
+        items: safeWorks.map((w: any) => ({
           id: w.id,
           title: w.title,
           video: { url: w.videoUrl, alt: w.videoAlt },
@@ -113,12 +127,12 @@ export default async function Page() {
     : undefined;
 
   const contactProps =
-    contact || social
+    contact || safeSocial.length
       ? {
           email: contact?.email,
           whatsapp: contact?.whatsappNumber,
           socialLinks:
-            social?.map((s: any) => ({
+            safeSocial.map((s: any) => ({
               platform: s.platform,
               url: s.url,
               icon: s.iconUrl,
@@ -139,7 +153,7 @@ export default async function Page() {
         brandName={siteSettings?.brandName}
         description={siteSettings?.metaDescription}
         contact={contact ?? undefined}
-        socialLinks={social ?? undefined}
+        socialLinks={safeSocial.length ? safeSocial : undefined}
       />
     </main>
   );

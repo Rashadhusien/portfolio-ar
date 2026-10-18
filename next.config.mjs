@@ -4,19 +4,8 @@ const nextConfig = {
     ignoreBuildErrors: false,
   },
   images: {
+    // Keep in sync with IMAGE_HOSTS in lib/validation/url.ts
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '**.sanity.io',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.cdn.sanity.io',
-      },
-      {
-        protocol: 'https',
-        hostname: '**.cloudinary.com',
-      },
       {
         protocol: 'https',
         hostname: 'res.cloudinary.com',
