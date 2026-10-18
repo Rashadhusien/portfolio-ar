@@ -24,7 +24,7 @@ import {
 export default async function AdminPage() {
   const session = await auth();
 
-  if (!session) {
+  if (!session?.user?.id) {
     redirect("/admin/login");
   }
 
