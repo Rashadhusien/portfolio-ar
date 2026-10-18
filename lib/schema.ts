@@ -144,6 +144,15 @@ export const admins = pgTable("admins", {
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
 
+// Failed admin login attempts, keyed by "email:<addr>" or "ip:<addr>".
+// Used by lib/login-rate-limit.ts to throttle brute-force attempts.
+export const loginAttempts = pgTable("login_attempts", {
+  key: text("key").primaryKey(),
+  failures: integer("failures").notNull().default(0),
+  windowStart: timestamp("window_start").defaultNow().notNull(),
+  lockedUntil: timestamp("locked_until"),
+});
+
 // Relations
 export const pricingPackagesRelations = relations(pricingPackages, ({ many }) => ({
   features: many(pricingFeatures),
