@@ -48,7 +48,7 @@ export function PricingManager({ initialPackages }: { initialPackages: any[] }) 
         </div></CardHeader>
         <CardContent><div className="grid gap-4">
           {packages.map((pkg:any)=>(
-            <Card key={pkg.id} className={pkg.isPopular ? "border-accent border-2" : ""}>
+            <Card key={pkg.id} className={pkg.isPopular ? "border-primary border-2" : ""}>
               <CardHeader><div className="flex justify-between">
                 <div><CardTitle className="flex gap-2 items-center">{pkg.name} {pkg.isPopular && <Crown className="h-4 w-4 text-yellow-500"/>}</CardTitle><p className="text-sm text-muted-foreground">{pkg.description} • {pkg.price} جنيه • #{pkg.displayOrder} {pkg.isVisible ? "" : "🚫"}</p></div>
                 <div className="flex gap-2">

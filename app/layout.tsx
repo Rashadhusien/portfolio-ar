@@ -1,6 +1,6 @@
 import React from "react";
-import type { Metadata } from "next";
-import { Cairo, Noto_Sans_Arabic } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Amiri, Noto_Sans_Arabic } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import { Toaster } from "sonner";
 
@@ -8,30 +8,36 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-// const geist = Geist({ subsets: ["latin"], variable: "--font-sans" });
-
-const cairoFont = Cairo({
-  subsets: ["arabic"],
-  weight: ["400", "500", "600", "700"],
-  variable: "--font-cairo",
+// Display: Amiri, a classical Naskh designed for typesetting Arabic books —
+// the face of the printed page this site is about.
+const displayFont = Amiri({
+  subsets: ["arabic", "latin"],
+  weight: ["400", "700"],
+  variable: "--font-display",
+  display: "swap",
 });
 
-const fontSans = Noto_Sans_Arabic({
+// Text and UI: a quiet, highly legible Arabic sans.
+const sansFont = Noto_Sans_Arabic({
   subsets: ["arabic"],
   variable: "--font-sans",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
   title: "Books With Arwa | مراجعات كتب وصناعة محتوى ثقافي",
   description:
     "منصة متخصصة في مراجعات الكتب والتسويق الثقافي على وسائل التواصل الاجتماعي",
-  generator: "v0.app",
   openGraph: {
     title: "Books With Arwa | مراجعات كتب وصناعة محتوى ثقافي",
     description:
       "منصة متخصصة في مراجعات الكتب والتسويق الثقافي على وسائل التواصل الاجتماعي",
     locale: "ar_EG",
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#f6f5f2",
 };
 
 export default function RootLayout({
@@ -43,13 +49,19 @@ export default function RootLayout({
     <html
       lang="ar"
       dir="rtl"
-      className={cn(cairoFont.variable, fontSans.variable, "font-sans")}
+      className={cn(displayFont.variable, sansFont.variable)}
+      suppressHydrationWarning
     >
       <head>
-        <link rel="icon" href="/favicon.ico" />
-        <link rel="apple-touch-icon" href="/favicon.ico" />
+        {/* Marks JS as available before first paint so the hero intro can
+            start from its hidden state without a flash (see globals.css). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: "document.documentElement.classList.add('js')",
+          }}
+        />
       </head>
-      <body className="font-cairo antialiased bg-background text-foreground">
+      <body>
         <SessionProvider>
           <TooltipProvider>{children}</TooltipProvider>
           <Toaster position="top-center" richColors dir="rtl" />

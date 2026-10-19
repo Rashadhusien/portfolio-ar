@@ -117,7 +117,7 @@ function StatsManager({ stats }: { stats: any[] }) {
       <CardContent><div className="space-y-2">
         {items.map((s: any) => (
           <div key={s.id} className="flex justify-between items-center p-3 border rounded-lg">
-            <span>{s.title} - <b className="text-accent">{s.followers}</b> {s.isVisible ? "👁️" : "🚫"}</span>
+            <span>{s.title} - <b className="text-primary">{s.followers}</b> {s.isVisible ? "👁️" : "🚫"}</span>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={()=>{setEditing(s); setIsVisible(s.isVisible); setOpen(true);}}><Edit className="h-4 w-4"/></Button>
               <ConfirmDialog trigger={<Button variant="destructive" size="sm"><Trash2 className="h-4 w-4"/></Button>} title="حذف الإحصائية" description="هل أنت متأكد؟" onConfirm={()=>runAction(()=>deleteAboutStat(s.id), ()=>setItems(items.filter((x:any)=>x.id!==s.id)))} />

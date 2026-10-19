@@ -1,8 +1,9 @@
 "use client";
 
 import { useRef } from "react";
+import Link from "next/link";
 import { useGSAP } from "@gsap/react";
-import { createScrollReveal } from "@/lib/gsap";
+import { revealList } from "@/lib/gsap";
 import { BookOpen, Sparkles, Camera, TrendingUp } from "lucide-react";
 import { services as fallbackServices } from "@/lib/data";
 
@@ -13,59 +14,51 @@ const iconMap = {
   trending: TrendingUp,
 };
 
-export function Services({ data }: { data?: { title: string; items: { id: string; name: string; description: string; icon: keyof typeof iconMap }[] } }) {
+type ServicesData = {
+  title: string;
+  items: { id: string; name: string; description: string; icon: keyof typeof iconMap }[];
+};
+
+export function Services({ data }: { data?: ServicesData }) {
   const container = useRef<HTMLElement>(null);
   const { title, items } = data ?? fallbackServices;
 
-  useGSAP(
-    () => {
-      createScrollReveal(".service-card", container);
-    },
-    { scope: container },
-  );
+  useGSAP(() => {
+    revealList(container, "[data-service]");
+  }, { scope: container });
 
   return (
-    <section id="services" ref={container} className="py-20 px-4">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">
-            {title}
-          </h2>
-          <div className="w-12 h-1 bg-accent rounded-full"></div>
+    <section id="services" ref={container} className="section-space bg-card">
+      <div className="container-page grid gap-12 lg:grid-cols-12 lg:gap-16">
+        <div className="lg:col-span-4">
+          <div className="lg:sticky lg:top-28">
+            <h2 className="type-h2">{title}</h2>
+            <p className="type-body mt-5 text-muted-foreground">
+              أقدّم أيضًا خدمات مخصصة تناسب احتياجات علامتك التجارية أو دار نشرك.{" "}
+              <Link href="#contact" className="link">
+                تواصلي معي
+              </Link>{" "}
+              لنتحدث عن فكرتك.
+            </p>
+          </div>
         </div>
 
-        {/* Services grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <ul className="lg:col-span-8 grid gap-x-12 gap-y-14 sm:grid-cols-2">
           {items.map((service) => {
-            const Icon = iconMap[service.icon];
+            const Icon = iconMap[service.icon] ?? BookOpen;
             return (
-              <div
-                key={service.id}
-                className="service-card group p-8 bg-background rounded-lg border border-border hover:border-accent hover:shadow-lg transition-all duration-300"
-              >
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center group-hover:from-accent/20 group-hover:to-accent/20 transition-colors">
-                    <Icon className="w-6 h-6 text-primary group-hover:text-accent transition-colors" />
-                  </div>
-                  <h3 className="text-xl font-semibold text-foreground pt-2">
-                    {service.name}
-                  </h3>
-                </div>
-                <p className="text-muted-foreground leading-relaxed">
+              <li key={service.id} data-service>
+                <h3 className="type-h3 flex items-center gap-3">
+                  <Icon aria-hidden="true" className="h-5 w-5 shrink-0 text-primary" strokeWidth={1.75} />
+                  {service.name}
+                </h3>
+                <p className="type-body mt-3 text-muted-foreground">
                   {service.description}
                 </p>
-              </div>
+              </li>
             );
           })}
-        </div>
-
-        {/* Additional services note */}
-        <div className="mt-12 p-6 bg-secondary/10 rounded-lg border border-secondary/20">
-          <p className="text-center text-muted-foreground">
-            نقدم خدمات إضافية مخصصة تناسب احتياجات علامتك التجارية أو دار نشرك.
-            تواصلي معي لمعرفة المزيد.
-          </p>
-        </div>
+        </ul>
       </div>
     </section>
   );

@@ -2,96 +2,74 @@
 
 import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
-import { createScrollReveal } from "@/lib/gsap";
+import { fadeIn } from "@/lib/gsap";
 import { about as fallbackAbout } from "@/lib/data";
 
-export function About({ data }: { data?: { title: string; content: string; features: string[]; stats: { title: string; description: { followers: string } }[] } }) {
-  const container = useRef<HTMLElement>(null);
-  const fallback = fallbackAbout;
-  const title = data?.title ?? fallback.title;
-  const content = data?.content ?? fallback.content;
-  const features = data?.features ?? fallback.features;
-  const stats = data?.stats ?? fallback.stats;
-  const highlights = fallback.highlights;
+type AboutData = {
+  title: string;
+  content: string;
+  features: string[];
+  stats: { title: string; description: { followers: string } }[];
+};
 
-  useGSAP(
-    () => {
-      createScrollReveal(".about-card", container);
-      createScrollReveal(".highlight-item", container);
-    },
-    { scope: container },
-  );
+export function About({ data }: { data?: AboutData }) {
+  const container = useRef<HTMLElement>(null);
+  const title = data?.title ?? fallbackAbout.title;
+  const content = (data?.content ?? fallbackAbout.content).trim();
+  const features = data?.features ?? fallbackAbout.features;
+  const stats = data?.stats ?? fallbackAbout.stats;
+
+  useGSAP(() => {
+    fadeIn(container, "[data-fade]");
+  }, { scope: container });
 
   return (
-    <section id="about" ref={container} className="py-20 px-4 bg-card/50">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">
-            {title}
-          </h2>
-          <div className="w-12 h-1 bg-accent rounded-full"></div>
-        </div>
+    <section id="about" ref={container} className="section-space">
+      <div className="container-page grid gap-12 lg:grid-cols-12 lg:gap-16">
+        <h2 className="type-h2 lg:col-span-4">{title}</h2>
 
-        {/* Main content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
-          {/* Content text */}
-          <div className="lg:col-span-2 about-card">
-            <p className="text-lg text-foreground leading-relaxed mb-6">
-              {content}
-            </p>
-            <div className="space-y-4">
-              <h3 className="text-xl font-semibold text-foreground">
-                ما الذي أقدمه:
-              </h3>
-              <ul className="space-y-3">
+        <div className="lg:col-span-8" data-fade>
+          <p className="type-body measure whitespace-pre-line text-foreground">
+            {content}
+          </p>
+
+          {features.length > 0 && (
+            <div className="mt-14">
+              <h3 className="type-h3">ما الذي أقدمه</h3>
+              <ul className="mt-5 grid gap-x-10 gap-y-4 sm:grid-cols-2">
                 {features.map((item) => (
-                  <li key={item} className="flex items-start gap-3">
-                    <span className="w-2 h-2 rounded-full bg-accent mt-2 flex-shrink-0"></span>
-                    <span className="text-foreground">{item}</span>
+                  <li key={item} className="type-body flex gap-4">
+                    <span
+                      aria-hidden="true"
+                      className="mt-[0.95em] h-px w-5 shrink-0 bg-primary"
+                    />
+                    <span>{item}</span>
                   </li>
                 ))}
               </ul>
             </div>
-          </div>
+          )}
 
-          {/* Stats card */}
-          <div className="about-card bg-gradient-to-br from-primary/10 to-secondary/10 p-8 rounded-xl border border-border/50">
-            <h3 className="text-lg font-semibold text-foreground mb-6">
-              الإحصائيات
-            </h3>
-            <div className="space-y-6">
-              {highlights.map((highlight) => (
-                <div key={highlight.title} className="text-center">
-                  <p className="text-3xl md:text-4xl font-bold text-accent mb-2">
-                    {highlight.value}
-                  </p>
-                  <p className="text-sm text-muted-foreground">
-                    {highlight.title}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* About grid items */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-          {stats.map((item) => (
-            <div
-              key={item.title}
-              className={`highlight-item p-6 bg-background rounded-lg border border-border hover:border-accent/50 transition-colors ${item.title === "بينتيرست" ? "col-span-2" : ""}`}
-            >
-              <h3 className="text-lg font-semibold text-foreground mb-2">
-                {item.title}
+          {stats.length > 0 && (
+            <div className="mt-16 rounded-[14px] bg-card px-6 py-8 sm:px-10">
+              <h3 className="type-small text-muted-foreground">
+                جمهوري على المنصات
               </h3>
-              <div className="text-muted-foreground">
-                <span className="text-3xl text-accent font-bold">
-                  {item.description.followers}
-                </span>
-                <span className="text-sm text-muted-foreground"> متابعين</span>
-              </div>
+              <dl className="mt-6 grid grid-cols-2 gap-x-8 gap-y-8 sm:grid-cols-3">
+                {stats.map((item) => (
+                  <div key={item.title}>
+                    <dt className="type-small text-muted-foreground">{item.title}</dt>
+                    <dd className="mt-1 font-display text-[2rem] font-bold leading-tight text-foreground">
+                      <bdi>{item.description.followers}</bdi>
+                      <span className="ms-2 font-sans text-base font-normal text-muted-foreground">
+                        متابع
+                      </span>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
             </div>
-          ))}
+          )}
         </div>
       </div>
     </section>
