@@ -53,12 +53,12 @@ export default async function Page() {
           {
             text: hero.ctaButtonText1,
             href: safeHref(hero.ctaButtonLink1),
-            variant: hero.ctaButtonVariant1 as any,
+            variant: hero.ctaButtonVariant1,
           },
           {
             text: hero.ctaButtonText2,
             href: safeHref(hero.ctaButtonLink2),
-            variant: hero.ctaButtonVariant2 as any,
+            variant: hero.ctaButtonVariant2,
           },
         ],
         profileImage: {

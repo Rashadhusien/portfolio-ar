@@ -4,97 +4,101 @@ import { useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useGSAP } from "@gsap/react";
-import { createHeroAnimation } from "@/lib/gsap";
-import { Button } from "@/components/ui/button";
+import { heroIntro } from "@/lib/gsap";
 import { hero as fallbackHero } from "@/lib/data";
+import { cn } from "@/lib/utils";
 
-export function Hero({ data }: { data?: { title: string; subtitle: string; ctaButtons: { text: string; href: string; variant: any }[]; profileImage: { url: string; alt: string }; socialLinks?: { icon: string; platform: string; url: string }[] } }) {
-  const container = useRef<HTMLDivElement>(null);
-  const { title, subtitle, ctaButtons, profileImage, socialLinks } = data ?? fallbackHero;
+type HeroData = {
+  title: string;
+  subtitle: string;
+  ctaButtons: { text: string; href: string; variant?: string }[];
+  profileImage: { url: string; alt: string };
+  socialLinks?: { icon: string; platform: string; url: string }[];
+};
 
-  useGSAP(
-    () => {
-      createHeroAnimation(container);
-    },
-    { scope: container },
-  );
+export function Hero({ data }: { data?: HeroData }) {
+  const container = useRef<HTMLElement>(null);
+  const { title, subtitle, ctaButtons, profileImage, socialLinks } =
+    data ?? fallbackHero;
+
+  useGSAP(() => {
+    heroIntro(container);
+  }, { scope: container });
 
   return (
     <section
       id="home"
       ref={container}
-      className="relative min-h-screen flex items-center justify-center py-20 px-4 overflow-hidden"
+      className="container-page grid items-center gap-12 pt-10 pb-16 md:py-16 lg:grid-cols-12 lg:gap-16 lg:py-20"
     >
-      {/* Background gradient decoration */}
-      <div className="absolute inset-0 -z-10 opacity-30">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-secondary rounded-full blur-3xl"></div>
-      </div>
+      <div className="lg:col-span-7">
+        <h1 data-hero="headline" className="type-display text-foreground">
+          {title}
+        </h1>
+        <p data-hero="sub" className="type-body mt-6 max-w-[34rem] text-muted-foreground">
+          {subtitle}
+        </p>
 
-      <div className="max-w-6xl mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-        {/* Left content */}
-        <div className="space-y-6 order-2 md:order-1">
-          <div className="space-y-4">
-            <h1 className="hero-title text-2xl md:text-4xl lg:text-6xl font-bold text-foreground text-balance leading-10">
-              {title}
-            </h1>
-            <p className="hero-subtitle text-lg md:text-xl text-muted-foreground max-w-lg leading-relaxed">
-              {subtitle}
-            </p>
-          </div>
-
-          {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            {ctaButtons.map((button) => (
-              <Link key={button.href} href={button.href}>
-                <Button
-                  className="w-full sm:w-auto px-8 py-6 text-base font-semibold"
-                  variant={button.variant || "default"}
-                  size="lg"
-                >
-                  {button.text}
-                </Button>
-              </Link>
-            ))}
-          </div>
-
-          {/* Social links preview */}
-          <div className="flex items-center gap-6">
-            <span className="text-sm text-muted-foreground">تابعني على:</span>
-            <div className="flex gap-4">
-              {(socialLinks ?? []).map(({ icon, platform, url }) => (
-                <a
-                  key={icon}
-                  href={url}
-                  target="_blank"
-                  className="w-10 h-10 rounded-full bg-primary/10 hover:bg-primary/20 flex items-center justify-center transition-colors text-primary"
-                  aria-label={platform}
-                >
-                  <Image
-                    src={icon}
-                    alt={platform}
-                    width={24}
-                    height={24}
-                    className=" rounded-2xl shadow-2xl w-[24px] h-[24px]"
-                    priority
-                  />
-                </a>
-              ))}
-            </div>
-          </div>
+        <div data-hero="actions" className="mt-10 flex flex-wrap items-center gap-3">
+          {ctaButtons.map((button, i) => (
+            <Link
+              key={`${button.href}-${i}`}
+              href={button.href}
+              className={cn(
+                "btn",
+                (button.variant ?? (i === 0 ? "default" : "outline")) === "default"
+                  ? "btn-primary"
+                  : "btn-quiet",
+              )}
+            >
+              {button.text}
+            </Link>
+          ))}
         </div>
 
-        {/* Right image */}
-        <div className="order-1 flex justify-center md:justify-end">
-          <div className="relative w-full max-w-md h-96  md:max-h-[900px]">
-            <Image
-              src={profileImage.url || "/placeholder.svg"}
-              alt={profileImage.alt}
-              fill
-              className="object-cover rounded-2xl shadow-2xl w-full h-full"
-              priority
-            />
+        {socialLinks && socialLinks.length > 0 && (
+          <div data-hero="social" className="mt-12 flex flex-wrap items-center gap-x-6 gap-y-3">
+            <span className="type-small text-muted-foreground">تابعني على</span>
+            <ul className="flex flex-wrap items-center gap-x-5 gap-y-2">
+              {socialLinks.map(({ icon, platform, url }) => (
+                <li key={url}>
+                  <a
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group inline-flex min-h-11 items-center gap-2 text-[0.9375rem] font-medium text-foreground"
+                  >
+                    <Image
+                      src={icon}
+                      alt=""
+                      width={20}
+                      height={20}
+                      className="h-5 w-5 rounded-[5px]"
+                    />
+                    <span className="underline decoration-transparent decoration-1 underline-offset-[0.3em] transition-[text-decoration-color] duration-200 group-hover:decoration-current">
+                      {platform}
+                    </span>
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
+        )}
+      </div>
+
+      <div className="lg:col-span-5">
+        <div
+          data-hero="image"
+          className="relative mx-auto aspect-[4/5] w-full max-w-[22rem] sm:max-w-[26rem] overflow-hidden rounded-[14px] bg-card lg:max-w-none"
+        >
+          <Image
+            src={profileImage.url || "/placeholder.svg"}
+            alt={profileImage.alt}
+            fill
+            priority
+            sizes="(min-width: 1024px) 40vw, (min-width: 640px) 26rem, 22rem"
+            className="object-cover"
+          />
         </div>
       </div>
     </section>

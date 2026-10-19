@@ -2,198 +2,209 @@
 
 import { useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
-import { createScrollReveal } from "@/lib/gsap";
-import { Button } from "@/components/ui/button";
-import { Mail, MessageCircle, Zap } from "lucide-react";
-import { siteSettings as fallbackSettings } from "@/lib/data";
-import Image from "next/image";
+import { MessageCircle } from "lucide-react";
 import emailjs from "@emailjs/browser";
+import { fadeIn } from "@/lib/gsap";
+import { siteSettings as fallbackSettings } from "@/lib/data";
 
-export function Contact({ data }: { data?: { email?: string; whatsapp?: string; socialLinks?: { platform: string; url: string; icon: string }[] } }) {
+type ContactData = {
+  email?: string;
+  whatsapp?: string;
+  socialLinks?: { platform: string; url: string; icon: string }[];
+};
+
+type Status = "idle" | "sending" | "success" | "error";
+
+const FALLBACK_EMAIL = "berrydeniz0@gmail.com";
+const FALLBACK_WHATSAPP = "+201150153088";
+
+// "+201150153088" -> "01150153088" (local Egyptian format for display)
+function displayPhone(raw: string) {
+  const digits = raw.replace(/[^\d+]/g, "");
+  return digits.startsWith("+20") ? `0${digits.slice(3)}` : digits;
+}
+
+const fieldClass =
+  "w-full rounded-[10px] border border-input bg-background px-4 py-3 text-base text-foreground placeholder:text-muted-foreground transition-colors duration-200 focus:border-primary focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring";
+
+export function Contact({ data }: { data?: ContactData }) {
   const container = useRef<HTMLElement>(null);
-  const socialLinks = data?.socialLinks ?? fallbackSettings.socialLinks;
-  const email = data?.email ?? "berrydeniz0@gmail.com";
-  const whatsapp = data?.whatsapp ?? "+201150153088";
-  const title = "تواصل معي";
-
-  useGSAP(
-    () => {
-      createScrollReveal(".contact-card", container);
-    },
-    { scope: container },
-  );
-
   const form = useRef<HTMLFormElement>(null);
-  const [loading, setLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [status, setStatus] = useState<Status>("idle");
 
-  const sendEmail = (e: React.FormEvent) => {
+  const socialLinks = data?.socialLinks ?? fallbackSettings.socialLinks;
+  const email = data?.email || FALLBACK_EMAIL;
+  const whatsapp = data?.whatsapp || FALLBACK_WHATSAPP;
+
+  useGSAP(() => {
+    fadeIn(container, "[data-fade]");
+  }, { scope: container });
+
+  const sendEmail = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!form.current) return;
+    const el = form.current;
+    if (!el) return;
 
-    setLoading(true);
+    // Honeypot: real visitors never see or fill this field.
+    if ((new FormData(el).get("company_website") as string)?.trim()) {
+      setStatus("success");
+      el.reset();
+      return;
+    }
 
-    emailjs
-      .sendForm(
-        process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID!,
-        process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID!,
-        form.current,
-        process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY!,
-      )
-      .then(
-        (result) => {
-          console.log(result.text);
-          setSuccess(true);
-          setLoading(false);
-          form.current?.reset();
-        },
-        (error) => {
-          console.log(error.text);
-          setLoading(false);
-        },
-      );
+    const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID;
+    const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID;
+    const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY;
+    if (!serviceId || !templateId || !publicKey) {
+      console.error("[contact] EmailJS environment variables are missing");
+      setStatus("error");
+      return;
+    }
+
+    setStatus("sending");
+    try {
+      await emailjs.sendForm(serviceId, templateId, el, { publicKey });
+      setStatus("success");
+      el.reset();
+    } catch (error) {
+      console.error("[contact] send failed", error);
+      setStatus("error");
+    }
   };
 
   return (
-    <section id="contact" ref={container} className="py-20 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance text-center">
-            {title}
-          </h2>
-          <div className="flex justify-center">
-            <div className="w-12 h-1 bg-accent rounded-full"></div>
-          </div>
-        </div>
-        {/* Contact options grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-          {/* Email card */}
-          <div className="contact-card p-8 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-lg border border-border hover:border-accent transition-colors">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-lg bg-accent/20 flex items-center justify-center">
-                <Mail className="w-6 h-6 text-accent" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground">
-                البريد الإلكتروني
-              </h3>
-            </div>
-            <p className="text-muted-foreground mb-6">
-              أرسلي لي بريد إلكتروني بخصوص التعاون والاستفسارات
-            </p>
-            <a href={`mailto:${email}`}>
-              <Button variant="outline" className="w-full  bg-gray-50">
-                <Mail className="w-4 h-4 ml-2" />
-                {email}
-              </Button>
-            </a>
-          </div>
+    <section id="contact" ref={container} className="section-space bg-card">
+      <div className="container-page grid gap-14 lg:grid-cols-12 lg:gap-16">
+        <div className="lg:col-span-5">
+          <h2 className="type-h2">تواصل معي</h2>
+          <p className="type-body mt-5 max-w-[30rem] text-muted-foreground">
+            للتعاون في مراجعة كتاب أو حملة لدار نشر أو أي فكرة عن الكتب، راسليني
+            وسأرد عليكِ في أقرب وقت.
+          </p>
 
-          {/* WhatsApp card */}
-          <div className="contact-card p-8 bg-gradient-to-br from-accent/10 to-primary/10 rounded-lg border border-border hover:border-accent transition-colors">
-            <div className="flex items-center gap-4 mb-4">
-              <div className="w-12 h-12 rounded-lg bg-accent/20 flex items-center justify-center">
-                <MessageCircle className="w-6 h-6 text-accent" />
-              </div>
-              <h3 className="text-xl font-semibold text-foreground">واتساب</h3>
+          <div className="mt-10 space-y-8" data-fade>
+            <div>
+              <p className="type-small text-muted-foreground">البريد الإلكتروني</p>
+              <a
+                href={`mailto:${email}`}
+                className="mt-1 inline-block break-all font-display text-2xl font-bold text-foreground underline decoration-1 underline-offset-[0.35em] transition-[text-decoration-thickness] duration-200 hover:decoration-2 sm:text-3xl"
+              >
+                <bdi>{email}</bdi>
+              </a>
             </div>
-            <p className="text-muted-foreground mb-6">
-              تواصل مباشرة عبر واتساب للحصول على إجابة سريعة
-            </p>
+
             <a
               href={`https://wa.me/${whatsapp.replace(/\D/g, "")}`}
               target="_blank"
               rel="noopener noreferrer"
+              className="btn btn-primary"
             >
-              <Button className="w-full">
-                <MessageCircle className="w-4 h-4 ml-2" />
-                01150153088
-              </Button>
+              <MessageCircle aria-hidden="true" className="h-5 w-5" />
+              واتساب <bdi dir="ltr">{displayPhone(whatsapp)}</bdi>
             </a>
+
+            {socialLinks.length > 0 && (
+              <div>
+                <p className="type-small text-muted-foreground">تابعيني</p>
+                <ul className="mt-2 flex flex-wrap gap-x-6 gap-y-1">
+                  {socialLinks.map((social) => (
+                    <li key={social.url}>
+                      <a
+                        href={social.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex min-h-11 items-center font-medium text-foreground underline decoration-transparent decoration-1 underline-offset-[0.3em] transition-[text-decoration-color] duration-200 hover:decoration-current"
+                      >
+                        {social.platform}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Quick contact form note */}
-        <div className="mt-12 p-8 bg-secondary/10 rounded-lg border border-secondary/20 text-center">
-          <p className="text-foreground font-semibold mb-2">
-            أو املأي النموذج أدناه
-          </p>
-          <p className="text-muted-foreground mb-6">
-            وسأتواصل معك في أقرب وقت ممكن
-          </p>
+        <div className="lg:col-span-7">
           <form
             ref={form}
             onSubmit={sendEmail}
-            className="space-y-4 max-w-md mx-auto"
+            className="rounded-[14px] bg-background p-6 sm:p-10"
+            noValidate={false}
           >
-            <input
-              type="text"
-              name="name"
-              placeholder="اسمك"
-              required
-              className="w-full px-4 py-3 rounded-lg bg-background border border-border focus:border-accent focus:outline-none transition-colors"
-            />
+            <h3 className="type-h3">أرسلي رسالة</h3>
+            <div className="mt-8 grid gap-6 sm:grid-cols-2">
+              <div>
+                <label htmlFor="contact-name" className="type-small font-medium">
+                  الاسم
+                </label>
+                <input
+                  id="contact-name"
+                  type="text"
+                  name="name"
+                  required
+                  maxLength={100}
+                  autoComplete="name"
+                  className={`${fieldClass} mt-2`}
+                />
+              </div>
+              <div>
+                <label htmlFor="contact-email" className="type-small font-medium">
+                  البريد الإلكتروني
+                </label>
+                <input
+                  id="contact-email"
+                  type="email"
+                  name="email"
+                  required
+                  maxLength={200}
+                  autoComplete="email"
+                  dir="ltr"
+                  className={`${fieldClass} mt-2 text-start`}
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label htmlFor="contact-message" className="type-small font-medium">
+                  رسالتك
+                </label>
+                <textarea
+                  id="contact-message"
+                  name="message"
+                  rows={5}
+                  required
+                  maxLength={3000}
+                  className={`${fieldClass} mt-2 resize-y`}
+                />
+              </div>
+              {/* Honeypot (spam bots fill every field) */}
+              <div aria-hidden="true" className="absolute -start-[9999px] h-px w-px overflow-hidden">
+                <label htmlFor="contact-company">Company website</label>
+                <input id="contact-company" type="text" name="company_website" tabIndex={-1} autoComplete="off" />
+              </div>
+            </div>
 
-            <input
-              type="email"
-              name="email"
-              placeholder="بريدك الإلكتروني"
-              required
-              className="w-full px-4 py-3 rounded-lg bg-background border border-border focus:border-accent focus:outline-none transition-colors"
-            />
-
-            <textarea
-              name="message"
-              placeholder="رسالتك"
-              rows={4}
-              required
-              className="w-full px-4 py-3 rounded-lg bg-background border border-border focus:border-accent focus:outline-none transition-colors resize-none"
-            />
-
-            <button
-              type="submit"
-              className="bg-primary text-white w-full p-2 rounded hover:bg-primary/80 transition"
-              disabled={loading}
-            >
-              {loading ? "جاري الارسال..." : "إرسال الرسالة"}
-            </button>
-
-            {success && (
-              <p className="text-green-500 text-center">
-                رسالتك تم إرسالها بنجاح!
+            <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-4">
+              <button type="submit" className="btn btn-primary" disabled={status === "sending"}>
+                {status === "sending" ? "جاري الإرسال…" : "إرسال الرسالة"}
+              </button>
+              <p role="status" aria-live="polite" className="type-small">
+                {status === "success" && (
+                  <span className="font-medium text-primary">
+                    وصلت رسالتك، شكرًا لك! سأرد عليكِ قريبًا.
+                  </span>
+                )}
+                {status === "error" && (
+                  <span className="font-medium text-destructive">
+                    تعذر إرسال الرسالة. حاولي مرة أخرى أو راسليني مباشرة على{" "}
+                    <a href={`mailto:${email}`} className="underline underline-offset-4">
+                      البريد الإلكتروني
+                    </a>
+                    .
+                  </span>
+                )}
               </p>
-            )}
+            </div>
           </form>
-        </div>
-        {/* Social media links */}
-        <div className=" mt-12 contact-card p-8 bg-background rounded-lg border border-border">
-          <h3 className="text-xl font-semibold text-foreground mb-6 flex items-center gap-2">
-            <Zap className="w-5 h-5 text-accent" />
-            تابعيني على وسائل التواصل
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {socialLinks.map((social) => (
-              <a
-                key={social.platform}
-                href={social.url}
-                className="p-6 rounded-lg bg-gradient-to-br from-background to-card border border-border hover:border-accent transition-all hover:shadow-md text-center"
-              >
-                <div className="text-3xl mb-2">
-                  {/* Simple mapping for icons based on platform name for now, or just generic */}
-                  <Image
-                    src={social.icon}
-                    alt={social.platform}
-                    width={48}
-                    height={48}
-                    className=" mx-auto rounded-2xl shadow-2xl w-[48px] h-[48px]"
-                    priority
-                  />
-                </div>
-                <p className="font-semibold text-xl text-foreground">
-                  {social.platform}
-                </p>
-              </a>
-            ))}
-          </div>
         </div>
       </div>
     </section>

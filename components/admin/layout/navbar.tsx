@@ -82,7 +82,7 @@ export default function AdminNavbar({
               <h1 className="text-xl md:text-2xl font-bold text-foreground">
                 لوحة التحكم
               </h1>
-              <div className="absolute -bottom-1 right-0 w-0 h-0.5 bg-gradient-to-l from-accent to-primary transition-all duration-300 hover:w-full" />
+              <div className="absolute -bottom-1 right-0 w-0 h-0.5 bg-primary transition-all duration-300 hover:w-full" />
             </div>
             <p className="text-xs text-muted-foreground mt-1">أروى</p>
           </div>
@@ -170,7 +170,7 @@ export default function AdminNavbar({
             className="gap-2 hover:bg-primary/10 transition-colors duration-200 relative"
           >
             <Bell className="h-4 w-4" />
-            <span className="absolute -top-1 -right-1 h-4 w-4 bg-accent text-accent-foreground text-xs rounded-full flex items-center justify-center">
+            <span className="absolute -top-1 -right-1 h-4 w-4 bg-primary text-primary-foreground text-xs rounded-full flex items-center justify-center">
               3
             </span>
           </Button>
@@ -209,7 +209,7 @@ export default function AdminNavbar({
       {/* Mobile info bar */}
       <div className="lg:hidden border-t border-border/50 bg-primary/5 px-4 py-3">
         <div className="flex items-center gap-2 text-sm">
-          <User className="h-4 w-4 text-accent" />
+          <User className="h-4 w-4 text-primary" />
           <span className="text-foreground font-medium">
             {session?.user?.name}
           </span>

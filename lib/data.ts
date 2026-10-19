@@ -7,6 +7,7 @@ export const navLinks = [
   { label: "الرئيسية", href: "#home" },
   { label: "عني", href: "#about" },
   { label: "الخدمات", href: "#services" },
+  { label: "أعمالي", href: "#portfolio" },
   { label: "الأسعار", href: "#pricing" },
   { label: "التواصل", href: "#contact" },
 ];

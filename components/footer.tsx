@@ -1,97 +1,92 @@
-import { Mail, MessageCircle } from "lucide-react";
+import Link from "next/link";
 import { navLinks, siteSettings as fallbackSettings } from "@/lib/data";
-import Image from "next/image";
 
-export function Footer({ brandName, description, contact, socialLinks: propLinks }: { brandName?: string; description?: string; contact?: { email: string; whatsappNumber: string }; socialLinks?: { platform: string; url: string; iconUrl: string }[] }) {
-  const fallback = fallbackSettings;
-  const socialLinks = (propLinks ? propLinks.map(s=>({ platform: s.platform, url: s.url, icon: s.iconUrl })) : fallback.socialLinks) as typeof fallback.socialLinks;
-  const desc = description ?? fallback.description;
-  const email = contact?.email ?? "berrydeniz0@gmail.com";
-  const whatsapp = contact?.whatsappNumber ?? "+201150153088";
+type FooterProps = {
+  brandName?: string;
+  description?: string;
+  contact?: { email: string; whatsappNumber: string };
+  socialLinks?: { platform: string; url: string; iconUrl: string }[];
+};
+
+function displayPhone(raw: string) {
+  const digits = raw.replace(/[^\d+]/g, "");
+  return digits.startsWith("+20") ? `0${digits.slice(3)}` : digits;
+}
+
+export function Footer({ brandName, description, contact, socialLinks: propLinks }: FooterProps) {
+  const socialLinks = propLinks
+    ? propLinks.map((s) => ({ platform: s.platform, url: s.url }))
+    : fallbackSettings.socialLinks;
+  const desc = description ?? fallbackSettings.description;
+  const email = contact?.email || "berrydeniz0@gmail.com";
+  const whatsapp = contact?.whatsappNumber || "+201150153088";
+  const brand = brandName || "Books With Arwa";
 
   return (
-    <footer className="bg-card border-t border-border/50">
-      <div className="max-w-6xl mx-auto px-4 py-12">
-        {/* Main footer content */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-          {/* About */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              شكراً جزيلاً
-            </h3>
-            <p className="text-muted-foreground text-sm leading-relaxed">
-              {desc}
-            </p>
+    <footer className="bg-background">
+      <div className="container-page py-16 md:py-20">
+        <div className="grid gap-12 md:grid-cols-12">
+          <div className="md:col-span-5">
+            <p className="font-display text-2xl font-bold">{brand}</p>
+            <p className="type-small mt-4 max-w-[26rem] text-muted-foreground">{desc}</p>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              الروابط السريعة
-            </h3>
-            <ul className="space-y-2">
+          <nav aria-label="روابط التذييل" className="md:col-span-3">
+            <h2 className="type-small font-semibold">الأقسام</h2>
+            <ul className="mt-4 grid gap-1">
               {navLinks.map((link) => (
                 <li key={link.href}>
-                  <a
+                  <Link
                     href={link.href}
-                    className="text-muted-foreground hover:text-accent transition-colors text-sm"
+                    className="inline-flex min-h-10 items-center text-[0.9375rem] text-muted-foreground transition-colors duration-200 hover:text-foreground"
                   >
                     {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          <div className="md:col-span-4">
+            <h2 className="type-small font-semibold">التواصل</h2>
+            <ul className="mt-4 grid gap-1 text-[0.9375rem]">
+              <li>
+                <a
+                  href={`mailto:${email}`}
+                  className="inline-flex min-h-10 items-center text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                >
+                  <bdi>{email}</bdi>
+                </a>
+              </li>
+              <li>
+                <a
+                  href={`https://wa.me/${whatsapp.replace(/\D/g, "")}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex min-h-10 items-center text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                >
+                  واتساب&nbsp;<bdi dir="ltr">{displayPhone(whatsapp)}</bdi>
+                </a>
+              </li>
+              {socialLinks.map((social) => (
+                <li key={social.url}>
+                  <a
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex min-h-10 items-center text-muted-foreground transition-colors duration-200 hover:text-foreground"
+                  >
+                    {social.platform}
                   </a>
                 </li>
               ))}
             </ul>
           </div>
-
-          {/* Contact */}
-          <div>
-            <h3 className="text-lg font-semibold text-foreground mb-4">
-              التواصل
-            </h3>
-            <div className="space-y-3">
-              <a
-                href={`mailto:${email}`}
-                className="flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors text-sm"
-              >
-                <Mail className="w-4 h-4" />
-                {email}
-              </a>
-              <a
-                href={`https://wa.me/${whatsapp.replace(/\D/g, "")}`}
-                className="flex items-center gap-2 text-muted-foreground hover:text-accent transition-colors text-sm"
-              >
-                <MessageCircle className="w-4 h-4" />
-                {whatsapp.replace("+20","0")}
-              </a>
-            </div>
-          </div>
         </div>
 
-        {/* Social media */}
-        <div className="flex justify-center gap-6 mb-8 pb-8 border-b border-border/50">
-          {socialLinks.map((social) => (
-            <a
-              key={social.platform}
-              href={social.url}
-              className="w-10 h-10 rounded-full bg-primary/10 hover:bg-accent/20 flex items-center justify-center transition-colors text-lg"
-              aria-label={social.platform}
-            >
-              <Image
-                src={social.icon}
-                alt={social.platform}
-                width={24}
-                height={24}
-                className=" mx-auto rounded-2xl shadow-2xl w-[24px] h-[24px]"
-                priority
-              />
-            </a>
-          ))}
-        </div>
-
-        {/* Bottom footer */}
-        <div className="flex flex-col md:flex-row items-center justify-center text-xs text-muted-foreground">
-          <p>جميع الحقوق محفوظة © {new Date().getFullYear()} </p>
-        </div>
+        <p className="type-small mt-16 text-muted-foreground">
+          <bdi>{brand}</bdi> © {new Date().getFullYear()} — جميع الحقوق محفوظة
+        </p>
       </div>
     </footer>
   );

@@ -3,6 +3,9 @@ import animate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: ["class"],
+  // Only apply hover: styles on devices that can actually hover, so taps on
+  // phones don't leave sticky hover states.
+  future: { hoverOnlyWhenSupported: true },
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -12,8 +15,8 @@ const config: Config = {
   theme: {
     extend: {
       fontFamily: {
-        cairo: "var(--font-cairo)",
-        mono: "var(--font-jetbrains-mono)",
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "serif"],
       },
       colors: {
         background: "hsl(var(--background))",
@@ -55,6 +58,12 @@ const config: Config = {
           "3": "hsl(var(--chart-3))",
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
+        },
+        night: {
+          DEFAULT: "hsl(var(--night))",
+          surface: "hsl(var(--night-surface))",
+          ink: "hsl(var(--night-ink))",
+          muted: "hsl(var(--night-muted))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",

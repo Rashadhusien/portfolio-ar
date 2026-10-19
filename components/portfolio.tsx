@@ -1,82 +1,135 @@
 "use client";
 
-import { useRef } from "react";
-import Image from "next/image";
+import { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
-import { createScrollReveal } from "@/lib/gsap";
-import { ExternalLink } from "lucide-react";
+import { ArrowUpLeft, Pause, Play } from "lucide-react";
+import { revealFrames } from "@/lib/gsap";
 import { portfolio as fallbackPortfolio, TIKTOK } from "@/lib/data";
 
-export function Portfolio({ data }: { data?: { title: string; items: { id: string; title: string; video: { url: string; alt: string }; link: string }[] } }) {
+type Work = { id: string; title: string; video: { url: string; alt: string }; link: string };
+
+function videoType(url: string) {
+  const ext = url.split("?")[0].split(".").pop()?.toLowerCase();
+  if (ext === "webm") return "video/webm";
+  if (ext === "mov") return "video/quicktime";
+  return "video/mp4";
+}
+
+/**
+ * A vertical video that plays only while it is mostly on screen, never
+ * downloads more than metadata until then, and always offers a pause
+ * control. With reduced motion it never autoplays.
+ */
+function WorkVideo({ work }: { work: Work }) {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [playing, setPlaying] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
+  const userPausedRef = useRef(false);
+  userPausedRef.current = userPaused;
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !userPausedRef.current) {
+          video.play().catch(() => {});
+        } else if (!entry.isIntersecting) {
+          video.pause();
+        }
+      },
+      { threshold: 0.6 },
+    );
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
+
+  const toggle = () => {
+    const video = videoRef.current;
+    if (!video) return;
+    if (video.paused) {
+      setUserPaused(false);
+      video.play().catch(() => {});
+    } else {
+      setUserPaused(true);
+      video.pause();
+    }
+  };
+
+  return (
+    <div data-frame className="relative aspect-[9/16] overflow-hidden rounded-[14px] bg-night-surface">
+      <video
+        ref={videoRef}
+        muted
+        loop
+        playsInline
+        preload="metadata"
+        aria-label={work.video.alt || work.title}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        className="h-full w-full object-cover"
+      >
+        {/* #t=0.1 makes browsers paint the first frame as a poster without autoplaying */}
+        <source src={`${work.video.url}#t=0.1`} type={videoType(work.video.url)} />
+      </video>
+      <button
+        type="button"
+        onClick={toggle}
+        aria-label={playing ? `إيقاف ${work.title}` : `تشغيل ${work.title}`}
+        className="absolute bottom-3 start-3 inline-flex h-11 w-11 items-center justify-center rounded-full bg-night/70 text-night-ink transition-colors duration-200 hover:bg-night/90"
+      >
+        {playing ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+      </button>
+    </div>
+  );
+}
+
+export function Portfolio({ data }: { data?: { title: string; items: Work[] } }) {
   const container = useRef<HTMLElement>(null);
   const { title, items } = data ?? fallbackPortfolio;
 
-  useGSAP(
-    () => {
-      createScrollReveal(".portfolio-item", container);
-    },
-    { scope: container },
-  );
+  useGSAP(() => {
+    revealFrames(container, "[data-frame]");
+  }, { scope: container });
 
   return (
-    <section ref={container} className="py-20 px-4 bg-card/50">
-      <div className="max-w-6xl mx-auto">
-        <div className="mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-4 text-balance">
-            {title}
-          </h2>
-          <div className="w-12 h-1 bg-accent rounded-full"></div>
+    <section id="portfolio" ref={container} className="section-space bg-night text-night-ink">
+      <div className="container-page">
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <h2 className="type-h2">{title}</h2>
+          <a
+            href={TIKTOK}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-11 items-center gap-2 text-night-muted underline decoration-1 underline-offset-[0.3em] transition-colors duration-200 hover:text-night-ink"
+          >
+            كل المراجعات على تيك توك
+            <ArrowUpLeft aria-hidden="true" className="h-4 w-4" />
+          </a>
         </div>
 
-        {/* Portfolio grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <ul className="-mx-4 mt-12 flex snap-x snap-mandatory gap-5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-3 sm:gap-8 sm:overflow-visible sm:px-0">
           {items.map((item) => (
-            <a
-              key={item.id}
-              href={item.link || "#"}
-              className="portfolio-item group rounded-lg overflow-hidden bg-background border border-border hover:border-accent transition-all duration-300 hover:shadow-lg"
-            >
-              {/* Image */}
-              <div className="relative w-full h-[600px] overflow-hidden">
-                <video
-                  autoPlay
-                  muted
-                  loop
-                  className="object-contain group-hover:scale-110 transition-transform duration-300"
+            <li key={item.id} className="w-[72%] shrink-0 snap-start sm:w-auto">
+              <WorkVideo work={item} />
+              <h3 className="mt-5 text-lg font-semibold leading-relaxed">{item.title}</h3>
+              {item.link && (
+                <a
+                  href={item.link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-1 inline-flex min-h-11 items-center gap-1.5 text-[0.9375rem] text-night-muted underline decoration-1 underline-offset-[0.3em] transition-colors duration-200 hover:text-night-ink"
                 >
-                  <source src={item.video.url} type="video/mp4" />
-                </video>
-
-                {/* Overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors" />
-              </div>
-
-              {/* Content */}
-              <div className="p-6">
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <h3 className="text-lg font-semibold text-foreground group-hover:text-accent transition-colors line-clamp-2">
-                    {item.title}
-                  </h3>
-                  <ExternalLink className="w-4 h-4 text-muted-foreground group-hover:text-accent transition-colors flex-shrink-0 mt-1" />
-                </div>
-              </div>
-            </a>
+                  شاهد المراجعة كاملة
+                  <ArrowUpLeft aria-hidden="true" className="h-4 w-4" />
+                </a>
+              )}
+            </li>
           ))}
-        </div>
-
-        {/* View more note */}
-        <div className="mt-12 text-center p-6 bg-secondary/10 rounded-lg">
-          <p className="text-muted-foreground">
-            اطلعي على{" "}
-            <a
-              href={TIKTOK}
-              className="text-accent hover:underline font-semibold"
-            >
-              جميع أعمالي
-            </a>{" "}
-            على وسائل التواصل الاجتماعي
-          </p>
-        </div>
+        </ul>
       </div>
     </section>
   );
