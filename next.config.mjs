@@ -12,12 +12,6 @@ const nextConfig = {
       },
     ],
   },
-  // Increase body size limit for server actions to handle video uploads
-  experimental: {
-    serverActions: {
-      bodySizeLimit: '10mb',
-    },
-  },
   headers: async () => {
     return [
       {

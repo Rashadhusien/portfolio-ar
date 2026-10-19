@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { updateAboutContent, createAboutFeature, updateAboutFeature, deleteAboutFeature, createAboutStat, updateAboutStat, deleteAboutStat } from "@/lib/actions/about.actions";
-import { toast } from "sonner";
+import { runAction } from "@/components/admin/shared/run-action";
 import { ConfirmDialog } from "@/components/admin/shared/confirm-dialog";
 import { Trash2, Edit, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -21,9 +21,8 @@ export function AboutManager({ initialContent, initialFeatures, initialStats }: 
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     setLoading(true);
-    const res = await updateAboutContent(fd);
+    await runAction(() => updateAboutContent(fd));
     setLoading(false);
-    if (res.error) toast.error(res.error); else toast.success(res.success);
   }
 
   return (
@@ -53,8 +52,7 @@ function FeaturesManager({ features }: { features: any[] }) {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const res = editing ? await updateAboutFeature(editing.id, fd) : await createAboutFeature(fd);
-    if (res.error) toast.error(res.error); else { toast.success(res.success); window.location.reload(); }
+    await runAction(() => (editing ? updateAboutFeature(editing.id, fd) : createAboutFeature(fd)), () => window.location.reload());
   }
 
   return (
@@ -77,7 +75,7 @@ function FeaturesManager({ features }: { features: any[] }) {
             <span>{f.feature} <span className="text-xs text-muted-foreground">#{f.displayOrder}</span></span>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={()=>{setEditing(f); setOpen(true);}}><Edit className="h-4 w-4"/></Button>
-              <ConfirmDialog trigger={<Button variant="destructive" size="sm"><Trash2 className="h-4 w-4"/></Button>} title="حذف الميزة" description="هل أنت متأكد؟" onConfirm={async()=>{const r=await deleteAboutFeature(f.id); if(r.error) toast.error(r.error); else {toast.success(r.success); setItems(items.filter((x:any)=>x.id!==f.id));}}} />
+              <ConfirmDialog trigger={<Button variant="destructive" size="sm"><Trash2 className="h-4 w-4"/></Button>} title="حذف الميزة" description="هل أنت متأكد؟" onConfirm={()=>runAction(()=>deleteAboutFeature(f.id), ()=>setItems(items.filter((x:any)=>x.id!==f.id)))} />
             </div>
           </div>
         ))}
@@ -97,8 +95,7 @@ function StatsManager({ stats }: { stats: any[] }) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     fd.set("isVisible", String(isVisible));
-    const res = editing ? await updateAboutStat(editing.id, fd) : await createAboutStat(fd);
-    if (res.error) toast.error(res.error); else { toast.success(res.success); window.location.reload(); }
+    await runAction(() => (editing ? updateAboutStat(editing.id, fd) : createAboutStat(fd)), () => window.location.reload());
   }
 
   return (
@@ -123,7 +120,7 @@ function StatsManager({ stats }: { stats: any[] }) {
             <span>{s.title} - <b className="text-accent">{s.followers}</b> {s.isVisible ? "👁️" : "🚫"}</span>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={()=>{setEditing(s); setIsVisible(s.isVisible); setOpen(true);}}><Edit className="h-4 w-4"/></Button>
-              <ConfirmDialog trigger={<Button variant="destructive" size="sm"><Trash2 className="h-4 w-4"/></Button>} title="حذف الإحصائية" description="هل أنت متأكد؟" onConfirm={async()=>{const r=await deleteAboutStat(s.id); if(r.error) toast.error(r.error); else {toast.success(r.success); setItems(items.filter((x:any)=>x.id!==s.id));}}} />
+              <ConfirmDialog trigger={<Button variant="destructive" size="sm"><Trash2 className="h-4 w-4"/></Button>} title="حذف الإحصائية" description="هل أنت متأكد؟" onConfirm={()=>runAction(()=>deleteAboutStat(s.id), ()=>setItems(items.filter((x:any)=>x.id!==s.id)))} />
             </div>
           </div>
         ))}

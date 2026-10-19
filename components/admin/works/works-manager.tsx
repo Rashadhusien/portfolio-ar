@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createWork, updateWork, deleteWork } from "@/lib/actions/works.actions";
 import { MediaUpload } from "@/components/admin/shared/media-upload";
-import { toast } from "sonner";
+import { runAction } from "@/components/admin/shared/run-action";
 import { ConfirmDialog } from "@/components/admin/shared/confirm-dialog";
 import { Trash2, Edit, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -25,8 +25,7 @@ export function WorksManager({ initialWorks }: { initialWorks: any[] }) {
     const fd = new FormData(e.currentTarget);
     fd.set("videoUrl", videoUrl);
     fd.set("isVisible", String(isVisible));
-    const res = editing ? await updateWork(editing.id, fd) : await createWork(fd);
-    if (res.error) toast.error(res.error); else { toast.success(res.success); window.location.reload(); }
+    await runAction(() => (editing ? updateWork(editing.id, fd) : createWork(fd)), () => window.location.reload());
   }
 
   return (
@@ -62,7 +61,7 @@ export function WorksManager({ initialWorks }: { initialWorks: any[] }) {
               <p className="text-xs text-muted-foreground">{w.platform} • #{w.displayOrder}</p>
               <div className="flex gap-2">
                 <Button variant="outline" size="sm" onClick={()=>{setEditing(w); setVideoUrl(w.videoUrl); setIsVisible(w.isVisible); setOpen(true);}}><Edit className="h-4 w-4"/></Button>
-                <ConfirmDialog trigger={<Button variant="destructive" size="sm"><Trash2 className="h-4 w-4"/></Button>} title="حذف العمل" description={`حذف ${w.title}؟`} onConfirm={async()=>{const r=await deleteWork(w.id); if(r.error) toast.error(r.error); else {toast.success(r.success); setWorks(works.filter((x:any)=>x.id!==w.id));}}} />
+                <ConfirmDialog trigger={<Button variant="destructive" size="sm"><Trash2 className="h-4 w-4"/></Button>} title="حذف العمل" description={`حذف ${w.title}؟`} onConfirm={()=>runAction(()=>deleteWork(w.id), ()=>setWorks(works.filter((x:any)=>x.id!==w.id)))} />
               </div>
             </div>
           </div>

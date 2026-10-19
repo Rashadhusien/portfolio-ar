@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createPricingPackage, updatePricingPackage, deletePricingPackage, setPopularPackage, createPricingFeature, updatePricingFeature, deletePricingFeature } from "@/lib/actions/pricing.actions";
-import { toast } from "sonner";
+import { runAction } from "@/components/admin/shared/run-action";
 import { ConfirmDialog } from "@/components/admin/shared/confirm-dialog";
 import { Trash2, Edit, Plus, Star, Crown } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -25,8 +25,7 @@ export function PricingManager({ initialPackages }: { initialPackages: any[] }) 
     const fd = new FormData(e.currentTarget);
     fd.set("isPopular", String(isPopular));
     fd.set("isVisible", String(isVisible));
-    const res = editing ? await updatePricingPackage(editing.id, fd) : await createPricingPackage(fd);
-    if (res.error) toast.error(res.error); else { toast.success(res.success); window.location.reload(); }
+    await runAction(() => (editing ? updatePricingPackage(editing.id, fd) : createPricingPackage(fd)), () => window.location.reload());
   }
 
   return (
@@ -53,9 +52,9 @@ export function PricingManager({ initialPackages }: { initialPackages: any[] }) 
               <CardHeader><div className="flex justify-between">
                 <div><CardTitle className="flex gap-2 items-center">{pkg.name} {pkg.isPopular && <Crown className="h-4 w-4 text-yellow-500"/>}</CardTitle><p className="text-sm text-muted-foreground">{pkg.description} • {pkg.price} جنيه • #{pkg.displayOrder} {pkg.isVisible ? "" : "🚫"}</p></div>
                 <div className="flex gap-2">
-                  {!pkg.isPopular && <Button variant="outline" size="sm" onClick={async()=>{const r=await setPopularPackage(pkg.id); if(r.error) toast.error(r.error); else {toast.success(r.success); window.location.reload();}}}><Star className="h-4 w-4"/></Button>}
+                  {!pkg.isPopular && <Button variant="outline" size="sm" onClick={()=>runAction(()=>setPopularPackage(pkg.id), ()=>window.location.reload())}><Star className="h-4 w-4"/></Button>}
                   <Button variant="outline" size="sm" onClick={()=>{setEditing(pkg); setIsPopular(pkg.isPopular); setIsVisible(pkg.isVisible); setOpen(true);}}><Edit className="h-4 w-4"/></Button>
-                  <ConfirmDialog trigger={<Button variant="destructive" size="sm"><Trash2 className="h-4 w-4"/></Button>} title="حذف الباقة" description={`حذف ${pkg.name}؟ سيتم حذف الميزات أيضا`} onConfirm={async()=>{const r=await deletePricingPackage(pkg.id); if(r.error) toast.error(r.error); else {toast.success(r.success); setPackages(packages.filter((x:any)=>x.id!==pkg.id));}}} />
+                  <ConfirmDialog trigger={<Button variant="destructive" size="sm"><Trash2 className="h-4 w-4"/></Button>} title="حذف الباقة" description={`حذف ${pkg.name}؟ سيتم حذف الميزات أيضا`} onConfirm={()=>runAction(()=>deletePricingPackage(pkg.id), ()=>setPackages(packages.filter((x:any)=>x.id!==pkg.id)))} />
                 </div>
               </div></CardHeader>
               <CardContent><FeaturesManager pkg={pkg} /></CardContent>
@@ -76,8 +75,7 @@ function FeaturesManager({ pkg }: { pkg: any }) {
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
-    const res = editing ? await updatePricingFeature(editing.id, fd) : await createPricingFeature(pkg.id, fd);
-    if (res.error) toast.error(res.error); else { toast.success(res.success); window.location.reload(); }
+    await runAction(() => (editing ? updatePricingFeature(editing.id, fd) : createPricingFeature(pkg.id, fd)), () => window.location.reload());
   }
 
   return (
@@ -100,7 +98,7 @@ function FeaturesManager({ pkg }: { pkg: any }) {
             <span>✓ {f.feature} <span className="text-xs text-muted-foreground">#{f.displayOrder}</span></span>
             <div className="flex gap-1">
               <Button variant="ghost" size="sm" onClick={()=>{setEditing(f); setOpen(true);}}><Edit className="h-3 w-3"/></Button>
-              <ConfirmDialog trigger={<Button variant="ghost" size="sm"><Trash2 className="h-3 w-3"/></Button>} title="حذف الميزة" description={f.feature} onConfirm={async()=>{const r=await deletePricingFeature(f.id); if(r.error) toast.error(r.error); else {toast.success(r.success); window.location.reload();}}} />
+              <ConfirmDialog trigger={<Button variant="ghost" size="sm"><Trash2 className="h-3 w-3"/></Button>} title="حذف الميزة" description={f.feature} onConfirm={()=>runAction(()=>deletePricingFeature(f.id), ()=>window.location.reload())} />
             </div>
           </li>
         ))}

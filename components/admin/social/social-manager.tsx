@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { createSocialLink, updateSocialLink, deleteSocialLink } from "@/lib/actions/social.actions";
 import { MediaUpload } from "@/components/admin/shared/media-upload";
-import { toast } from "sonner";
+import { runAction } from "@/components/admin/shared/run-action";
 import { ConfirmDialog } from "@/components/admin/shared/confirm-dialog";
 import { Trash2, Edit, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -26,8 +26,7 @@ export function SocialManager({ initialLinks }: { initialLinks: any[] }) {
     const fd = new FormData(e.currentTarget);
     fd.set("iconUrl", iconUrl);
     fd.set("isVisible", String(isVisible));
-    const res = editing ? await updateSocialLink(editing.id, fd) : await createSocialLink(fd);
-    if (res.error) toast.error(res.error); else { toast.success(res.success); window.location.reload(); }
+    await runAction(() => (editing ? updateSocialLink(editing.id, fd) : createSocialLink(fd)), () => window.location.reload());
   }
 
   return (
@@ -57,7 +56,7 @@ export function SocialManager({ initialLinks }: { initialLinks: any[] }) {
             <div className="flex items-center gap-3"><Image src={s.iconUrl} alt={s.platform} width={32} height={32} className="rounded" /><div><p className="font-medium">{s.platform} {s.isVisible ? "" : "🚫"}</p><p className="text-xs text-muted-foreground">{s.url} • #{s.displayOrder}</p></div></div>
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={()=>{setEditing(s); setIconUrl(s.iconUrl); setIsVisible(s.isVisible); setOpen(true);}}><Edit className="h-4 w-4"/></Button>
-              <ConfirmDialog trigger={<Button variant="destructive" size="sm"><Trash2 className="h-4 w-4"/></Button>} title="حذف الرابط" description={s.platform} onConfirm={async()=>{const r=await deleteSocialLink(s.id); if(r.error) toast.error(r.error); else {toast.success(r.success); setLinks(links.filter((x:any)=>x.id!==s.id));}}} />
+              <ConfirmDialog trigger={<Button variant="destructive" size="sm"><Trash2 className="h-4 w-4"/></Button>} title="حذف الرابط" description={s.platform} onConfirm={()=>runAction(()=>deleteSocialLink(s.id), ()=>setLinks(links.filter((x:any)=>x.id!==s.id)))} />
             </div>
           </div>
         ))}
