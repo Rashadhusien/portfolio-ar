@@ -1,9 +1,19 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { db } from "@/lib/db";
 import { admins } from "@/lib/schema";
-import { eq } from "drizzle-orm";
+import { sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
+import {
+  clearFailures,
+  isLocked,
+  rateLimitKeys,
+  recordFailure,
+} from "@/lib/login-rate-limit";
+
+class RateLimitedError extends CredentialsSignin {
+  code = "rate_limited";
+}
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [
@@ -12,23 +22,36 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) {
+      async authorize(credentials, request) {
+        if (
+          typeof credentials?.email !== "string" ||
+          typeof credentials?.password !== "string" ||
+          !credentials.email ||
+          !credentials.password
+        ) {
           return null;
         }
 
+        const email = credentials.email.trim().toLowerCase();
+        const { emailKey, ipKey } = rateLimitKeys(email, request);
+
+        if (await isLocked([emailKey, ipKey])) {
+          throw new RateLimitedError();
+        }
+
         const admin = await db.query.admins.findFirst({
-          where: eq(admins.email, credentials.email as string),
+          where: sql`lower(${admins.email}) = ${email}`,
         });
 
-        if (!admin) return null;
+        const isValid =
+          !!admin && (await bcrypt.compare(credentials.password, admin.password));
 
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          admin.password,
-        );
+        if (!admin || !isValid) {
+          await recordFailure(emailKey, ipKey);
+          return null;
+        }
 
-        if (!isValid) return null;
+        await clearFailures(emailKey);
 
         return {
           id: admin.id,

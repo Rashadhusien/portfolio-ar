@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,12 +23,14 @@ function AdminLoginContent() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const blocked = searchParams.get("blocked") === "true";
+  const [rateLimited, setRateLimited] = useState(false);
+  const blocked = rateLimited || searchParams.get("blocked") === "true";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError("");
+    setRateLimited(false);
 
     try {
       const result = await signIn("credentials", {
@@ -36,7 +39,9 @@ function AdminLoginContent() {
         redirect: false,
       });
 
-      if (result?.error) {
+      if (result?.code === "rate_limited") {
+        setRateLimited(true);
+      } else if (result?.error) {
         setError("البريد الإلكتروني أو كلمة المرور غير صحيحة");
       } else {
         router.push("/admin");
@@ -124,12 +129,12 @@ function AdminLoginContent() {
           </form>
 
           <div className="mt-6 text-center">
-            <a
+            <Link
               href="/"
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               ← العودة إلى الموقع الرئيسي
-            </a>
+            </Link>
           </div>
         </CardContent>
       </Card>

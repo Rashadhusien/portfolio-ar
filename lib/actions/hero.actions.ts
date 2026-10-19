@@ -6,17 +6,18 @@ import { heroContent } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { safeImageSrc, safeLink } from "@/lib/validation/url";
 
 const heroSchema = z.object({
-  profileImageUrl: z.string().min(1, "Image URL is required"),
+  profileImageUrl: safeImageSrc("Image URL is required"),
   profileImageAlt: z.string().min(1, "Alt text is required"),
   title: z.string().min(1, "Title is required"),
   subtitle: z.string().min(1, "Subtitle is required"),
   ctaButtonText1: z.string().min(1, "CTA button text is required"),
-  ctaButtonLink1: z.string().min(1, "CTA link is required"),
+  ctaButtonLink1: safeLink("CTA link is required"),
   ctaButtonVariant1: z.string().min(1, "Variant is required"),
   ctaButtonText2: z.string().min(1, "CTA button text is required"),
-  ctaButtonLink2: z.string().min(1, "CTA link is required"),
+  ctaButtonLink2: safeLink("CTA link is required"),
   ctaButtonVariant2: z.string().min(1, "Variant is required"),
 });
 

@@ -6,11 +6,12 @@ import { socialLinks } from "@/lib/schema";
 import { eq, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { safeImageSrc, safeLink } from "@/lib/validation/url";
 
 const socialSchema = z.object({
   platform: z.string().min(1, "المنصة مطلوبة"),
-  url: z.string().url("رابط غير صالح"),
-  iconUrl: z.string().min(1, "رابط الأيقونة مطلوب"),
+  url: safeLink("رابط غير صالح"),
+  iconUrl: safeImageSrc("رابط الأيقونة مطلوب"),
   displayOrder: z.coerce.number().int().min(0).default(0),
   isVisible: z.coerce.boolean().default(true),
 });
@@ -19,7 +20,7 @@ export async function getSocialLinks() {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
   try {
-    return await db.query.socialLinks.findMany({ orderBy: [asc(socialLinks.displayOrder)] });
+    return await db.query.socialLinks.findMany({ orderBy: [asc(socialLinks.displayOrder), asc(socialLinks.createdAt)] });
   } catch (e) {
     console.error("getSocialLinks DB error:", e);
     return [];

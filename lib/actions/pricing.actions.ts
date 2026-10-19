@@ -26,8 +26,8 @@ export async function getPricingPackages() {
   if (!session?.user?.id) throw new Error("Unauthorized");
   try {
     return await db.query.pricingPackages.findMany({
-      orderBy: [asc(pricingPackages.displayOrder)],
-      with: { features: { orderBy: [asc(pricingFeatures.displayOrder)] } },
+      orderBy: [asc(pricingPackages.displayOrder), asc(pricingPackages.createdAt)],
+      with: { features: { orderBy: [asc(pricingFeatures.displayOrder), asc(pricingFeatures.createdAt)] } },
     });
   } catch (e) {
     console.error("getPricingPackages DB error:", e);
@@ -105,7 +105,7 @@ export async function getPricingFeatures(packageId: string) {
   try {
     return await db.query.pricingFeatures.findMany({
       where: eq(pricingFeatures.packageId, packageId),
-      orderBy: [asc(pricingFeatures.displayOrder)],
+      orderBy: [asc(pricingFeatures.displayOrder), asc(pricingFeatures.createdAt)],
     });
   } catch (e) {
     console.error("getPricingFeatures DB error:", e);
