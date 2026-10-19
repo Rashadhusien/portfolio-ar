@@ -11,7 +11,7 @@ import {
   updateService,
   deleteService,
 } from "@/lib/actions/services.actions";
-import { toast } from "sonner";
+import { runAction } from "@/components/admin/shared/run-action";
 import { ConfirmDialog } from "@/components/admin/shared/confirm-dialog";
 import { Trash2, Edit, Plus } from "lucide-react";
 import {
@@ -46,14 +46,10 @@ export function ServicesManager({
     const fd = new FormData(e.currentTarget);
     fd.set("icon", icon);
     fd.set("isVisible", String(isVisible));
-    const res = editing
-      ? await updateService(editing.id, fd)
-      : await createService(fd);
-    if (res.error) toast.error(res.error);
-    else {
-      toast.success(res.success);
-      window.location.reload();
-    }
+    await runAction(
+      () => (editing ? updateService(editing.id, fd) : createService(fd)),
+      () => window.location.reload(),
+    );
   }
 
   return (
@@ -177,14 +173,12 @@ export function ServicesManager({
                   }
                   title="حذف الخدمة"
                   description={`حذف ${s.name}؟`}
-                  onConfirm={async () => {
-                    const r = await deleteService(s.id);
-                    if (r.error) toast.error(r.error);
-                    else {
-                      toast.success(r.success);
-                      setServices(services.filter((x: any) => x.id !== s.id));
-                    }
-                  }}
+                  onConfirm={() =>
+                    runAction(
+                      () => deleteService(s.id),
+                      () => setServices(services.filter((x: any) => x.id !== s.id)),
+                    )
+                  }
                 />
               </div>
             </div>

@@ -1,32 +1,29 @@
 "use server";
 
-import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { siteSettings, contactInfo } from "@/lib/schema";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { safeImageSrc } from "@/lib/validation/url";
+import { adminAction, firstIssue, requireAdmin } from "@/lib/actions/helpers";
 
 const siteSettingsSchema = z.object({
-  brandName: z.string().min(1, "Brand name is required"),
-  metaTitle: z.string().min(1, "Meta title is required"),
-  metaDescription: z.string().min(1, "Meta description is required"),
-  ogLocale: z.string().min(1, "Locale is required"),
-  faviconUrl: safeImageSrc("Invalid URL").optional(),
-  logoUrl: safeImageSrc("Invalid URL").optional(),
+  brandName: z.string().min(1, "اسم العلامة التجارية مطلوب"),
+  metaTitle: z.string().min(1, "عنوان الميتا مطلوب"),
+  metaDescription: z.string().min(1, "وصف الميتا مطلوب"),
+  ogLocale: z.string().min(1, "اللغة مطلوبة"),
+  faviconUrl: safeImageSrc("رابط الأيقونة غير صالح").optional(),
+  logoUrl: safeImageSrc("رابط الشعار غير صالح").optional(),
 });
 
 const contactInfoSchema = z.object({
-  email: z.string().email("Invalid email"),
-  whatsappNumber: z.string().min(1, "WhatsApp number is required"),
+  email: z.string().email("البريد الإلكتروني غير صالح"),
+  whatsappNumber: z.string().min(1, "رقم الواتساب مطلوب"),
 });
 
 export async function getSiteSettings() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
-  }
+  await requireAdmin();
   try {
     return await db.query.siteSettings.findFirst();
   } catch (e) {
@@ -36,51 +33,45 @@ export async function getSiteSettings() {
 }
 
 export async function updateSiteSettings(formData: FormData) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Unauthorized" };
-  }
-
-  const validatedFields = siteSettingsSchema.safeParse({
-    brandName: formData.get("brandName"),
-    metaTitle: formData.get("metaTitle"),
-    metaDescription: formData.get("metaDescription"),
-    ogLocale: formData.get("ogLocale"),
-    faviconUrl: formData.get("faviconUrl") || undefined,
-    logoUrl: formData.get("logoUrl") || undefined,
-  });
-
-  if (!validatedFields.success) {
-    return { error: validatedFields.error.errors[0].message };
-  }
-
-  const existingSettings = await db.query.siteSettings.findFirst();
-  
-  if (existingSettings) {
-    await db.update(siteSettings)
-      .set({
-        ...validatedFields.data,
-        updatedAt: new Date(),
-      })
-      .where(eq(siteSettings.id, existingSettings.id));
-  } else {
-    await db.insert(siteSettings).values({
-      ...validatedFields.data,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+  return adminAction("updateSiteSettings", async () => {
+    const validatedFields = siteSettingsSchema.safeParse({
+      brandName: formData.get("brandName"),
+      metaTitle: formData.get("metaTitle"),
+      metaDescription: formData.get("metaDescription"),
+      ogLocale: formData.get("ogLocale"),
+      faviconUrl: formData.get("faviconUrl") || undefined,
+      logoUrl: formData.get("logoUrl") || undefined,
     });
-  }
 
-  revalidatePath("/admin/settings");
-  revalidatePath("/");
-  return { success: "Site settings updated successfully" };
+    if (!validatedFields.success) {
+      return { error: firstIssue(validatedFields.error) };
+    }
+
+    const existingSettings = await db.query.siteSettings.findFirst();
+
+    if (existingSettings) {
+      await db.update(siteSettings)
+        .set({
+          ...validatedFields.data,
+          updatedAt: new Date(),
+        })
+        .where(eq(siteSettings.id, existingSettings.id));
+    } else {
+      await db.insert(siteSettings).values({
+        ...validatedFields.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+
+    revalidatePath("/admin/settings");
+    revalidatePath("/");
+    return { success: "تم تحديث إعدادات الموقع بنجاح" };
+  });
 }
 
 export async function getContactInfo() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    throw new Error("Unauthorized");
-  }
+  await requireAdmin();
   try {
     return await db.query.contactInfo.findFirst();
   } catch (e) {
@@ -90,38 +81,35 @@ export async function getContactInfo() {
 }
 
 export async function updateContactInfo(formData: FormData) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return { error: "Unauthorized" };
-  }
-
-  const validatedFields = contactInfoSchema.safeParse({
-    email: formData.get("email"),
-    whatsappNumber: formData.get("whatsappNumber"),
-  });
-
-  if (!validatedFields.success) {
-    return { error: validatedFields.error.errors[0].message };
-  }
-
-  const existingContact = await db.query.contactInfo.findFirst();
-  
-  if (existingContact) {
-    await db.update(contactInfo)
-      .set({
-        ...validatedFields.data,
-        updatedAt: new Date(),
-      })
-      .where(eq(contactInfo.id, existingContact.id));
-  } else {
-    await db.insert(contactInfo).values({
-      ...validatedFields.data,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+  return adminAction("updateContactInfo", async () => {
+    const validatedFields = contactInfoSchema.safeParse({
+      email: formData.get("email"),
+      whatsappNumber: formData.get("whatsappNumber"),
     });
-  }
 
-  revalidatePath("/admin/contact");
-  revalidatePath("/");
-  return { success: "Contact info updated successfully" };
+    if (!validatedFields.success) {
+      return { error: firstIssue(validatedFields.error) };
+    }
+
+    const existingContact = await db.query.contactInfo.findFirst();
+
+    if (existingContact) {
+      await db.update(contactInfo)
+        .set({
+          ...validatedFields.data,
+          updatedAt: new Date(),
+        })
+        .where(eq(contactInfo.id, existingContact.id));
+    } else {
+      await db.insert(contactInfo).values({
+        ...validatedFields.data,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      });
+    }
+
+    revalidatePath("/admin/contact");
+    revalidatePath("/");
+    return { success: "تم تحديث معلومات التواصل بنجاح" };
+  });
 }
