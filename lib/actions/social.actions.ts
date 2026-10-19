@@ -1,12 +1,18 @@
 "use server";
 
-import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { socialLinks } from "@/lib/schema";
 import { eq, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { safeImageSrc, safeLink } from "@/lib/validation/url";
+import {
+  adminAction,
+  firstIssue,
+  isUuid,
+  MESSAGES,
+  requireAdmin,
+} from "@/lib/actions/helpers";
 
 const socialSchema = z.object({
   platform: z.string().min(1, "المنصة مطلوبة"),
@@ -16,9 +22,23 @@ const socialSchema = z.object({
   isVisible: z.coerce.boolean().default(true),
 });
 
+function parseSocial(formData: FormData) {
+  return socialSchema.safeParse({
+    platform: formData.get("platform"),
+    url: formData.get("url"),
+    iconUrl: formData.get("iconUrl"),
+    displayOrder: formData.get("displayOrder") ?? 0,
+    isVisible: formData.get("isVisible") === "false" ? false : true,
+  });
+}
+
+function revalidate() {
+  revalidatePath("/admin/social");
+  revalidatePath("/");
+}
+
 export async function getSocialLinks() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  await requireAdmin();
   try {
     return await db.query.socialLinks.findMany({ orderBy: [asc(socialLinks.displayOrder), asc(socialLinks.createdAt)] });
   } catch (e) {
@@ -28,44 +48,37 @@ export async function getSocialLinks() {
 }
 
 export async function createSocialLink(formData: FormData) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Unauthorized" };
-  const parsed = socialSchema.safeParse({
-    platform: formData.get("platform"),
-    url: formData.get("url"),
-    iconUrl: formData.get("iconUrl"),
-    displayOrder: formData.get("displayOrder") ?? 0,
-    isVisible: formData.get("isVisible") === "false" ? false : true,
+  return adminAction("createSocialLink", async () => {
+    const parsed = parseSocial(formData);
+    if (!parsed.success) return { error: firstIssue(parsed.error) };
+    await db.insert(socialLinks).values(parsed.data);
+    revalidate();
+    return { success: "تمت إضافة الرابط" };
   });
-  if (!parsed.success) return { error: parsed.error.errors[0].message };
-  await db.insert(socialLinks).values(parsed.data);
-  revalidatePath("/admin/social");
-  revalidatePath("/");
-  return { success: "تمت إضافة الرابط" };
 }
 
 export async function updateSocialLink(id: string, formData: FormData) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Unauthorized" };
-  const parsed = socialSchema.safeParse({
-    platform: formData.get("platform"),
-    url: formData.get("url"),
-    iconUrl: formData.get("iconUrl"),
-    displayOrder: formData.get("displayOrder") ?? 0,
-    isVisible: formData.get("isVisible") === "false" ? false : true,
+  return adminAction("updateSocialLink", async () => {
+    if (!isUuid(id)) return { error: MESSAGES.invalidId };
+    const parsed = parseSocial(formData);
+    if (!parsed.success) return { error: firstIssue(parsed.error) };
+    const rows = await db
+      .update(socialLinks)
+      .set({ ...parsed.data, updatedAt: new Date() })
+      .where(eq(socialLinks.id, id))
+      .returning({ id: socialLinks.id });
+    if (!rows.length) return { error: MESSAGES.notFound };
+    revalidate();
+    return { success: "تم التحديث" };
   });
-  if (!parsed.success) return { error: parsed.error.errors[0].message };
-  await db.update(socialLinks).set({ ...parsed.data, updatedAt: new Date() }).where(eq(socialLinks.id, id));
-  revalidatePath("/admin/social");
-  revalidatePath("/");
-  return { success: "تم التحديث" };
 }
 
 export async function deleteSocialLink(id: string) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Unauthorized" };
-  await db.delete(socialLinks).where(eq(socialLinks.id, id));
-  revalidatePath("/admin/social");
-  revalidatePath("/");
-  return { success: "تم الحذف" };
+  return adminAction("deleteSocialLink", async () => {
+    if (!isUuid(id)) return { error: MESSAGES.invalidId };
+    const rows = await db.delete(socialLinks).where(eq(socialLinks.id, id)).returning({ id: socialLinks.id });
+    if (!rows.length) return { error: MESSAGES.notFound };
+    revalidate();
+    return { success: "تم الحذف" };
+  });
 }

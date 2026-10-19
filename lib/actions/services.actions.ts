@@ -1,11 +1,17 @@
 "use server";
 
-import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { services } from "@/lib/schema";
 import { eq, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import {
+  adminAction,
+  firstIssue,
+  isUuid,
+  MESSAGES,
+  requireAdmin,
+} from "@/lib/actions/helpers";
 
 const serviceSchema = z.object({
   name: z.string().min(1, "الاسم مطلوب"),
@@ -15,9 +21,23 @@ const serviceSchema = z.object({
   isVisible: z.coerce.boolean().default(true),
 });
 
+function parseService(formData: FormData) {
+  return serviceSchema.safeParse({
+    name: formData.get("name"),
+    description: formData.get("description"),
+    icon: formData.get("icon"),
+    displayOrder: formData.get("displayOrder") ?? 0,
+    isVisible: formData.get("isVisible") === "false" ? false : true,
+  });
+}
+
+function revalidate() {
+  revalidatePath("/admin/services");
+  revalidatePath("/");
+}
+
 export async function getServices() {
-  const session = await auth();
-  if (!session?.user?.id) throw new Error("Unauthorized");
+  await requireAdmin();
   try {
     return await db.query.services.findMany({ orderBy: [asc(services.displayOrder), asc(services.createdAt)] });
   } catch (e) {
@@ -27,53 +47,51 @@ export async function getServices() {
 }
 
 export async function createService(formData: FormData) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Unauthorized" };
-  const parsed = serviceSchema.safeParse({
-    name: formData.get("name"),
-    description: formData.get("description"),
-    icon: formData.get("icon"),
-    displayOrder: formData.get("displayOrder") ?? 0,
-    isVisible: formData.get("isVisible") === "false" ? false : true,
+  return adminAction("createService", async () => {
+    const parsed = parseService(formData);
+    if (!parsed.success) return { error: firstIssue(parsed.error) };
+    await db.insert(services).values(parsed.data);
+    revalidate();
+    return { success: "تمت إضافة الخدمة" };
   });
-  if (!parsed.success) return { error: parsed.error.errors[0].message };
-  await db.insert(services).values(parsed.data);
-  revalidatePath("/admin/services");
-  revalidatePath("/");
-  return { success: "تمت إضافة الخدمة" };
 }
 
 export async function updateService(id: string, formData: FormData) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Unauthorized" };
-  const parsed = serviceSchema.safeParse({
-    name: formData.get("name"),
-    description: formData.get("description"),
-    icon: formData.get("icon"),
-    displayOrder: formData.get("displayOrder") ?? 0,
-    isVisible: formData.get("isVisible") === "false" ? false : true,
+  return adminAction("updateService", async () => {
+    if (!isUuid(id)) return { error: MESSAGES.invalidId };
+    const parsed = parseService(formData);
+    if (!parsed.success) return { error: firstIssue(parsed.error) };
+    const rows = await db
+      .update(services)
+      .set({ ...parsed.data, updatedAt: new Date() })
+      .where(eq(services.id, id))
+      .returning({ id: services.id });
+    if (!rows.length) return { error: MESSAGES.notFound };
+    revalidate();
+    return { success: "تم تحديث الخدمة" };
   });
-  if (!parsed.success) return { error: parsed.error.errors[0].message };
-  await db.update(services).set({ ...parsed.data, updatedAt: new Date() }).where(eq(services.id, id));
-  revalidatePath("/admin/services");
-  revalidatePath("/");
-  return { success: "تم تحديث الخدمة" };
 }
 
 export async function deleteService(id: string) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Unauthorized" };
-  await db.delete(services).where(eq(services.id, id));
-  revalidatePath("/admin/services");
-  revalidatePath("/");
-  return { success: "تم حذف الخدمة" };
+  return adminAction("deleteService", async () => {
+    if (!isUuid(id)) return { error: MESSAGES.invalidId };
+    const rows = await db.delete(services).where(eq(services.id, id)).returning({ id: services.id });
+    if (!rows.length) return { error: MESSAGES.notFound };
+    revalidate();
+    return { success: "تم حذف الخدمة" };
+  });
 }
 
 export async function toggleServiceVisibility(id: string, isVisible: boolean) {
-  const session = await auth();
-  if (!session?.user?.id) return { error: "Unauthorized" };
-  await db.update(services).set({ isVisible, updatedAt: new Date() }).where(eq(services.id, id));
-  revalidatePath("/admin/services");
-  revalidatePath("/");
-  return { success: "تم التحديث" };
+  return adminAction("toggleServiceVisibility", async () => {
+    if (!isUuid(id)) return { error: MESSAGES.invalidId };
+    const rows = await db
+      .update(services)
+      .set({ isVisible: Boolean(isVisible), updatedAt: new Date() })
+      .where(eq(services.id, id))
+      .returning({ id: services.id });
+    if (!rows.length) return { error: MESSAGES.notFound };
+    revalidate();
+    return { success: "تم التحديث" };
+  });
 }
